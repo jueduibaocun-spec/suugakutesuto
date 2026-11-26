@@ -1,0 +1,1072 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" href="data:," />
+<title>数学 単元テスト作成アプリ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Zen+Maru+Gothic:wght@700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+  :root{
+    --bg:#F4F1EA; --bg2:#EDE8DC; --card:#FFFFFF; --ink:#1C2430; --muted:#5B6572;
+    --line:#DDD6C6; --accent:#0E6B5C; --accent-ink:#FFFFFF; --accent-soft:#E2EFEA;
+    --amber:#C77400; --amber-soft:#FBF0DC; --danger:#B3261E;
+    --paper:#FFFFFF; --paper-ink:#14181D; --radius:14px;
+    --shadow:0 10px 30px rgba(28,36,48,.10);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#131920; --bg2:#0E1319; --card:#1C242E; --ink:#EDF1F5; --muted:#A7B2BF;
+      --line:#33404E; --accent:#2FB89F; --accent-ink:#06231D; --accent-soft:#173A34;
+      --amber:#F2A93B; --amber-soft:#3A2C14; --shadow:0 10px 30px rgba(0,0,0,.4);
+    }
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2));color:var(--ink);
+    font-family:"Zen Kaku Gothic New",system-ui,-apple-system,"Hiragino Kaku Gothic ProN",sans-serif;
+    line-height:1.6; min-height:100vh;}
+  button,select,input{font:inherit}
+  button,[role="button"],select,input:not([type="checkbox"]){min-height:44px}
+  .wrap{max-width:1240px;margin:0 auto;padding:20px 16px 56px}
+
+  /* ---------- header ---------- */
+  .hero{padding:8px 2px 18px}
+  .hero h1{font-family:"Zen Maru Gothic",sans-serif;font-weight:900;font-size:clamp(26px,5vw,40px);
+    letter-spacing:.02em;margin:0 0 6px;line-height:1.25}
+  .hero h1 .hl{color:var(--accent)}
+  .hero p{margin:0;color:var(--muted);font-size:15px;max-width:640px}
+  .hero .badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .badge{font-size:12.5px;font-weight:700;background:var(--card);border:1px solid var(--line);
+    border-radius:999px;padding:6px 12px;color:var(--muted)}
+
+  /* ---------- layout ---------- */
+  .layout{display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start}
+  @media (max-width:900px){.layout{grid-template-columns:1fr}}
+
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:18px;position:sticky;top:14px}
+  @media (max-width:900px){.panel{position:static}}
+  .panel h2{font-size:13px;letter-spacing:.12em;color:var(--muted);margin:20px 0 10px;font-weight:900}
+  .panel h2:first-child{margin-top:0}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{border:1.5px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;
+    padding:9px 14px;font-weight:700;font-size:14px;cursor:pointer;min-height:44px}
+  .chip:hover{border-color:var(--accent)}
+  .chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+  .chip.unit{border-radius:10px;text-align:left;line-height:1.35}
+  .units{display:grid;grid-template-columns:1fr;gap:8px}
+  .seg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .seg.cols3{grid-template-columns:repeat(3,1fr)}
+  .seg button{border:1.5px solid var(--line);background:transparent;color:var(--ink);border-radius:10px;
+    font-weight:700;font-size:14px;cursor:pointer;padding:8px 4px}
+  .seg button[aria-pressed="true"]{background:var(--amber-soft);border-color:var(--amber);color:var(--ink)}
+  .unit-desc{font-size:13px;color:var(--muted);background:var(--accent-soft);border-radius:10px;padding:10px 12px;margin-top:10px}
+  .checks{display:grid;gap:4px}
+  .checks label{display:flex;align-items:center;gap:10px;padding:10px 6px;cursor:pointer;font-size:14.5px;font-weight:500;border-radius:8px}
+  .checks input[type="checkbox"]{width:20px;height:20px;accent-color:var(--accent);flex:none}
+  .cta{display:grid;gap:10px;margin-top:20px}
+  .btn{border:none;border-radius:12px;padding:13px 16px;font-weight:900;font-size:15.5px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+  .btn-primary{background:var(--accent);color:var(--accent-ink)}
+  .btn-pdf{background:#B3261E;color:#fff}
+  .btn-pdf-sub{background:var(--card);border:1.5px solid #B3261E;color:#B3261E}
+  @media (prefers-color-scheme: dark){.btn-pdf-sub{color:#F2A93B;border-color:#F2A93B}}
+  .btn[disabled]{opacity:.6;pointer-events:none}
+  .pdf-status{font-size:13px;color:var(--muted);min-height:1.4em;margin:2px 0 0}
+  .pdf-status.err{color:var(--danger)}
+  .btn-amber{background:var(--amber);color:#fff}
+  @media (prefers-color-scheme: dark){.btn-amber{color:#241A05}}
+  .btn-ghost{background:transparent;border:1.5px solid var(--line);color:var(--ink)}
+  .btn:active{transform:translateY(1px)}
+  .file-note{font-size:12.5px;color:var(--muted);margin-top:12px;line-height:1.7}
+  .file-note strong{color:var(--ink)}
+
+  /* ---------- test paper ---------- */
+  .paper-col{display:grid;gap:20px;min-width:0}
+  .paper{background:var(--paper);color:var(--paper-ink);border-radius:8px;box-shadow:var(--shadow);
+    padding:36px 40px 44px;border:1px solid #E3E0D8}
+  @media (max-width:560px){.paper{padding:22px 16px 28px}}
+  .paper-head{border:2px solid #14181D;border-radius:8px;padding:10px 14px;background:#FBFAF6}
+  .paper-meta{display:grid;grid-template-columns:1.1fr 1.3fr .9fr auto;gap:10px 16px;align-items:center;font-size:14px}
+  @media (max-width:700px){.paper-meta{grid-template-columns:1fr 1fr}.score-box{grid-column:1/-1;justify-self:stretch;text-align:center}}
+  .paper-meta .field{display:flex;align-items:baseline;gap:6px;white-space:nowrap;overflow:hidden}
+  .paper-meta .blank{display:inline-block;border-bottom:1.5px solid #14181D;min-width:44px;flex:1}
+  .paper-meta .blank.name{min-width:90px}
+  .paper-meta .blank.date{min-width:76px}
+  .score-box{border:2px solid #14181D;border-radius:6px;padding:6px 16px;font-weight:900;font-size:16px;white-space:nowrap;background:#fff;text-align:center}
+  .score-box small{font-weight:700;color:#555}
+  .paper-title{text-align:center;margin:20px 0 2px;padding-bottom:14px;border-bottom:3px double #14181D}
+  .paper-title .grade-line{font-size:12.5px;letter-spacing:.22em;color:#555;font-weight:700}
+  .paper-title h3{font-family:"Zen Maru Gothic",sans-serif;font-size:clamp(21px,4vw,27px);margin:4px 0 0;font-weight:900;line-height:1.35}
+  .paper-note{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;font-size:12.5px;color:#444;margin:10px 0 0}
+  .paper-note span{border:1px solid #D8D3C2;border-radius:999px;padding:3px 12px;background:#FBFAF6}
+  .qs{list-style:none;margin:8px 0 0;padding:0;counter-reset:q}
+  .qs.two-col{display:grid;grid-template-columns:1fr 1fr;column-gap:34px}
+  @media (max-width:640px){.qs.two-col{grid-template-columns:1fr}}
+  .qs li{padding:16px 2px 18px;border-bottom:1px dashed #C9C4B4;break-inside:avoid}
+  .qs li:last-child{border-bottom:none}
+  .qs.two-col li{border-bottom:1px dashed #C9C4B4}
+  .q-line{display:flex;gap:10px;align-items:flex-start}
+  .q-num{flex:none;min-width:34px;height:26px;padding:0 6px;border:2px solid #14181D;border-radius:999px;
+    display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13.5px;margin-top:2px;background:#14181D;color:#fff}
+  .q-body{flex:1;min-width:0}
+  .q-text{font-size:16px;font-weight:700;line-height:1.75;word-break:break-word}
+  .q-points{flex:none;font-size:11.5px;color:#14181D;font-weight:900;border:1.5px solid #14181D;border-radius:999px;padding:1px 8px;margin-top:4px;background:#FBF0DC;white-space:nowrap}
+  .work-space{margin:10px 0 2px 44px;border:1px solid #D8D3C2;border-radius:6px;
+    background:repeating-linear-gradient(180deg,#fff 0 27px,#EDE8DA 27px 28px)}
+  .qs.two-col .work-space{margin-left:0}
+  .ans-line{margin:10px 0 0 44px;font-size:15px;display:flex;align-items:baseline;gap:8px}
+  .ans-line .ans-blank{display:inline-block;border-bottom:1.5px solid #14181D;flex:1;min-width:110px}
+  .qs.two-col .ans-line{margin-left:0}
+  .frac{display:inline-flex;flex-direction:column;text-align:center;vertical-align:middle;margin:0 .15em;line-height:1.15;font-size:.86em}
+  .frac .top{border-bottom:1.5px solid currentColor;padding:0 .3em}
+  .frac .bot{padding:0 .3em}
+  sup,sub{font-size:.72em}
+
+  .answer-paper{background:var(--paper);color:var(--paper-ink);border-radius:8px;box-shadow:var(--shadow);
+    padding:26px 32px 32px;border:2px solid var(--danger)}
+  @media (max-width:560px){.answer-paper{padding:20px 16px 26px}}
+  .answer-paper h3{font-family:"Zen Maru Gothic",sans-serif;margin:0 0 4px;font-size:21px;color:var(--danger)}
+  .answer-paper .sub{font-size:13px;color:#555;margin:0 0 14px}
+  .ans-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 30px;margin:0;padding:0;list-style:none}
+  @media (min-width:1100px){.ans-grid{grid-template-columns:1fr 1fr 1fr}}
+  @media (max-width:560px){.ans-grid{grid-template-columns:1fr}}
+  .ans-grid li{border-bottom:1px dashed #C9C4B4;padding:8px 2px;font-size:14.5px;line-height:1.6;break-inside:avoid}
+  .ans-grid b{color:var(--danger);margin-right:8px}
+  .ans-grid .pts{color:#888;font-size:12px;white-space:nowrap}
+  .toolbar{display:flex;flex-wrap:wrap;gap:10px}
+  .toolbar .btn{flex:1;min-width:150px}
+  footer{margin-top:28px;color:var(--muted);font-size:13px;text-align:center;line-height:1.8}
+
+  @page{size:A4 portrait;margin:10mm}
+  @media print{
+    body{background:#fff}
+    .hero,.panel,.toolbar,footer,.no-print{display:none !important}
+    .wrap{padding:0;max-width:none}
+    .layout{grid-template-columns:1fr}
+    .paper,.answer-paper{box-shadow:none;border:none;border-radius:0;padding:6mm;page-break-inside:avoid;break-inside:avoid}
+    .answer-paper{page-break-before:always;border:2px solid #000}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <h1>数学 <span class="hl">単元テスト</span>作成アプリ</h1>
+    <p>学年・科目と単元を選ぶだけで、その範囲だけのテストを自動で作ります。中学と高校の範囲に対応し、高校は数学I・A・II・B・III・Cの全科目を細かい単元に分けました。作るたびに数字が変わるので、練習用にも本番用にも何枚でも作れます。テストと解答はそれぞれPDFで保存でき、どちらもA4判1枚に収まるように自動で調整されます。</p>
+    <div class="badges">
+      <span class="badge">中学1年〜中学3年 ＋ 高校 数学I・A・II・B・III・C／全47単元</span>
+      <span class="badge">解答つき</span>
+      <span class="badge">テスト・解答を別々にPDF保存（各A4・1枚）</span>
+      <span class="badge">ファイルで持ち出しOK</span>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- ===== controls ===== -->
+    <aside class="panel" aria-label="テストの設定">
+      <h2>① 学年・科目を選ぶ</h2>
+      <div class="chips" id="gradeChips"></div>
+
+      <h2>② 単元を選ぶ</h2>
+      <div class="units" id="unitChips"></div>
+      <p class="unit-desc" id="unitDesc"></p>
+
+      <h2>③ 問題数</h2>
+      <div class="seg" id="countSeg" role="group" aria-label="問題数">
+        <button type="button" data-count="5">5問</button>
+        <button type="button" data-count="10" aria-pressed="true">10問</button>
+        <button type="button" data-count="15">15問</button>
+        <button type="button" data-count="20">20問</button>
+      </div>
+
+      <h2>④ 難易度</h2>
+      <div class="seg cols3" id="diffSeg" role="group" aria-label="難易度">
+        <button type="button" data-diff="1">基礎</button>
+        <button type="button" data-diff="2" aria-pressed="true">標準</button>
+        <button type="button" data-diff="3">発展</button>
+      </div>
+
+      <h2>⑤ 用紙のオプション</h2>
+      <div class="checks">
+        <label><input type="checkbox" id="optName" checked> 名前・日付・得点欄をつける</label>
+        <label><input type="checkbox" id="optWork" checked> 計算スペースをつける</label>
+        <label><input type="checkbox" id="optTwoCol" checked> 短い問題は2列に並べて配置する</label>
+        <label><input type="checkbox" id="optAnswers" checked> 解答（先生用）を表示する</label>
+      </div>
+
+      <div class="cta">
+        <button type="button" class="btn btn-primary" id="btnShuffle">🎲 新しい問題で作り直す</button>
+        <button type="button" class="btn btn-pdf" id="btnPdfTest">📄 テストをPDFで保存</button>
+        <button type="button" class="btn btn-pdf-sub" id="btnPdfAnswers">📄 解答をPDFで保存</button>
+        <button type="button" class="btn btn-amber" id="btnSaveTest">⬇ テストをファイルで保存</button>
+        <button type="button" class="btn btn-ghost" id="btnSaveApp">⬇ このアプリ自体をファイルで保存</button>
+        <p class="pdf-status" id="pdfStatus" role="status" aria-live="polite"></p>
+      </div>
+      <p class="file-note"><strong>PDFについて：</strong>「テストをPDFで保存」はテスト用紙だけ、「解答をPDFで保存」は解答だけをPDFにします。<strong>どちらもA4判1枚に収まるように、全体を自動で縮小して1ページにまとめます</strong>（問題数が多いときは文字が少し小さくなります）。どちらもブラウザの中だけで作成するので、GitHub Pagesなどの静的サイトでもそのまま使えます（初回はPDF作成用のライブラリを読み込むためネット接続が必要です）。<br><strong>他のサイトで使うには：</strong>「このアプリ自体をファイルで保存」で <strong>.htmlファイル</strong> がダウンロードできます。そのファイルを自分のサイトにアップロードすれば、そのまま同じアプリとして動きます。</p>
+    </aside>
+
+    <!-- ===== paper ===== -->
+    <div class="paper-col">
+      <article class="paper" id="paper" aria-label="テスト用紙">
+        <div class="paper-head" id="paperHead">
+          <div class="paper-meta">
+            <span class="field"><span class="blank"></span>年 <span class="blank"></span>組 <span class="blank"></span>番</span>
+            <span class="field">名前 <span class="blank name"></span></span>
+            <span class="score-box">得点 <small>／</small> 100</span>
+            <span class="field">日付 <span class="blank date"></span></span>
+          </div>
+        </div>
+        <div class="paper-title">
+          <div class="grade-line" id="paperGrade"></div>
+          <h3 id="paperTitle"></h3>
+          <p class="paper-note"><span>計算の途中も書くこと</span><span>答えは一番最後まで求めること</span><span id="paperCountNote"></span></p>
+        </div>
+        <ol class="qs" id="questionList"></ol>
+      </article>
+
+      <article class="answer-paper" id="answerPaper" aria-label="解答">
+        <h3>解答・配点（先生用）</h3>
+        <p class="sub" id="answerSub"></p>
+        <ol class="ans-grid" id="answerList"></ol>
+      </article>
+    </div>
+  </div>
+
+  <footer>
+    問題は選んだ単元の範囲から自動生成しています。作り直すたびに数字が変わります。<br>
+    配布・印刷には左の「テストをPDFで保存」「解答をPDFで保存」が便利です。テストと解答は別々のPDFになり、どちらもA4判1枚に収まります。生徒用と先生用に分けて渡せます。
+  </footer>
+</div>
+
+<script>
+"use strict";
+/* ================= helpers ================= */
+function ri(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){var t=a%b;a=b;b=t;}return a||1;}
+function fracHTML(n,d){var g=gcd(n,d);n/=g;d/=g;if(d===1)return ""+n;return '<span class="frac"><span class="top">'+n+'</span><span class="bot">'+d+'</span></span>';}
+function fracText(n,d){var g=gcd(n,d);n/=g;d/=g;if(d===1)return ""+n;return n+"/"+d;}
+function mixedText(n,d){var g=gcd(n,d);n/=g;d/=g;var w=Math.floor(n/d),r=n%d;if(r===0)return ""+w;if(w===0)return r+"/"+d;return w+"と"+r+"/"+d;}
+function trimNum(x){return Math.round(x*100)/100;}
+function sgn(n){return n<0?"−"+Math.abs(n):""+n;}
+function term(coef,varName,first){
+  // returns string like 3x, -2x, x
+  if(coef===0)return "";
+  var a=Math.abs(coef);
+  var core=(a===1?"":a)+varName;
+  if(first) return (coef<0?"−":"")+core;
+  return (coef<0?" − ":" ＋ ")+core;
+}
+function numTerm(n,first){
+  if(n===0)return "";
+  if(first) return sgn(n);
+  return (n<0?" − ":" ＋ ")+Math.abs(n);
+}
+
+/* ================= problem generators =================
+   Each returns {q: html, a: text}. Difficulty d: 1 easy, 2 normal, 3 hard. */
+var GEN = {
+  /* ---- 小学1年 ---- */
+  e1_addsub: function(d){
+    var M = d===1?10:(d===2?20:100);
+    var t = ri(1,4);
+    if(t===1){var a=ri(2,M-1),b=ri(1,M-a);return{q:a+" ＋ "+b+" ＝",a:""+(a+b)};}
+    if(t===2){var a2=ri(5,M),b2=ri(1,a2);return{q:a2+" − "+b2+" ＝",a:""+(a2-b2)};}
+    if(t===3){var c=ri(2,M-2),dd=ri(1,M-c),e=c+dd;return{q:c+" ＋ □ ＝ "+e+"　□に入る数は？",a:""+dd};}
+    var f=ri(10,M),g=ri(2,9);return{q:"りんごが "+f+" こ あります。"+g+" こ 食べました。残りは何こ？",a:(f-g)+"こ"};},
+  e1_numbers: function(d){
+    var M=d===1?50:100; var t=ri(1,4);
+    if(t===1){var a=ri(11,M-5);return{q:a+" の次の数は？ また、前の数は？",a:"次は "+(a+1)+"、前は "+(a-1)};}
+    if(t===2){var b=ri(2,9)*10+ri(1,9);return{q:b+" は、10のまとまりが何こで、1が何こ？",a:"10のまとまり "+Math.floor(b/10)+"こ、1が "+(b%10)+"こ"};}
+    if(t===3){var c=ri(10,M),e=ri(10,M);if(c===e)e++;var big=Math.max(c,e);return{q:c+" と "+e+" では、どちらが大きい？",a:""+big};}
+    var f=ri(3,9);return{q:"10が "+f+" こ集まると、いくつになりますか？",a:""+(f*10)};},
+  e1_clock: function(d){
+    var t=ri(1,4);
+    if(t===1){var h=ri(1,12);return{q:"短い針が "+h+"、長い針が 12 のとき、何時ですか？",a:h+"時"};}
+    if(t===2){var h2=ri(1,11);return{q:"短い針が "+h2+" と "+(h2+1)+" の間、長い針が 6 のとき、何時何分ですか？",a:h2+"時30分"};}
+    if(t===3){var m=pick([10,20,30,40,50]);return{q:"長い針が "+(m/5)+" を指しているときは、何分ですか？",a:m+"分"};}
+    var hh=ri(1,5),mm=pick([0,30]);return{q:hh+"時間"+(mm?"30分":"")+"は、全部で何分ですか？",a:""+(hh*60+mm)+"分"};},
+  /* ---- 小学2年 ---- */
+  e2_hissan: function(d){
+    var M=d===1?99:(d===2?999:9999); var t=ri(1,3);
+    if(t===1){var a=ri(12,M),b=ri(11,M);return{q:"筆算で計算しよう。　"+a+" ＋ "+b,a:""+(a+b)};}
+    if(t===2){var c=ri(30,M),e=ri(11,c-5);return{q:"筆算で計算しよう。　"+c+" − "+e,a:""+(c-e)};}
+    var f=ri(15,Math.floor(M/2)),g=ri(15,Math.floor(M/2)),h=ri(15,99);return{q:f+" ＋ "+g+" ＋ "+h+" ＝",a:""+(f+g+h)};},
+  e2_kuku: function(d){
+    var t=ri(1,4);
+    if(t===1){var a=ri(2,9),b=ri(2,9);return{q:a+" × "+b+" ＝",a:""+(a*b)};}
+    if(t===2){var a2=ri(2,9),b2=ri(2,9);return{q:"□ × "+a2+" ＝ "+(a2*b2)+"　□に入る数は？",a:""+b2};}
+    if(t===3){var n=ri(3,8),per=ri(2,9);return{q:"1人に "+per+" こずつ、"+n+" 人に配ります。全部で何こ必要ですか？",a:(n*per)+"こ"};}
+    var c=ri(2,9),dd=ri(2,9),e=ri(2,5);return{q:c+" × "+dd+" × "+e+" ＝",a:""+(c*dd*e)};},
+  e2_units: function(d){
+    var t=ri(1,4);
+    if(t===1){var a=ri(2,9),b=ri(1,9);return{q:a+" m "+b+" cm は、何cmですか？",a:(a*100+b)+"cm"};}
+    if(t===2){var c=ri(105,990);return{q:c+" cm は、何m何cmですか？",a:Math.floor(c/100)+"m"+(c%100)+"cm"};}
+    if(t===3){var e=ri(2,9);return{q:e+" L は、何dLですか？",a:(e*10)+"dL"};}
+    var f=ri(20,90),g=ri(20,90);return{q:f+" mm と "+g+" mm、合わせると何cm何mmですか？",a:Math.floor((f+g)/10)+"cm"+((f+g)%10)+"mm"};},
+  /* ---- 小学3年 ---- */
+  e3_div: function(d){
+    var t=ri(1,4);
+    if(t===1){var b=ri(2,9),q=ri(2,9);return{q:(b*q)+" ÷ "+b+" ＝",a:""+q};}
+    if(t===2){var b2=ri(2,9),q2=ri(3,9),r=ri(1,b2-1);return{q:(b2*q2+r)+" ÷ "+b2+" ＝ □ あまり △　□と△は？",a:"商 "+q2+"、あまり "+r};}
+    if(t===3){var n=ri(3,9),tot=ri(2,9)*n;return{q:"あめ "+tot+" こを "+n+" 人で同じ数ずつ分けます。1人何こですか？",a:(tot/n)+"こ"};}
+    var big=d===3?ri(200,900):ri(30,99),dv=ri(2,9),qq=Math.floor(big/dv);return{q:big+" ÷ "+dv+" ＝ □ あまり △",a:"商 "+qq+"、あまり "+(big-dv*qq)};},
+  e3_frac: function(d){
+    var t=ri(1,4);
+    if(t===1){var dn=pick([2,3,4,5,6,8]),n=ri(1,dn-1);return{q:fracHTML(n,dn)+" は、"+fracHTML(1,dn)+" を何こ集めた数ですか？",a:n+"こ"};}
+    if(t===2){var dn2=pick([4,5,6,8,10]),a=ri(1,dn2-2),b=ri(1,dn2-1-a);return{q:fracHTML(a,dn2)+" ＋ "+fracHTML(b,dn2)+" ＝",a:fracText(a+b,dn2)};}
+    if(t===3){var dn3=pick([5,6,7,8]),c=ri(3,dn3-1),e=ri(1,c-1);return{q:fracHTML(c,dn3)+" − "+fracHTML(e,dn3)+" ＝",a:fracText(c-e,dn3)};}
+    var dn4=pick([3,4,6,8]),f=ri(1,dn4-1),g2=ri(1,dn4-1);if(f===g2)g2=(g2%dn4)+1;var big2=Math.max(f,g2);return{q:fracHTML(f,dn4)+" と "+fracHTML(g2,dn4)+" では、どちらが大きい？",a:fracText(big2,dn4)};},
+  e3_decimal: function(d){
+    var t=ri(1,4);
+    if(t===1){var a=trimNum(ri(11,99)/10),b=trimNum(ri(11,89)/10);return{q:a+" ＋ "+b+" ＝",a:""+trimNum(a+b)};}
+    if(t===2){var c=trimNum(ri(30,99)/10),e=trimNum(ri(11,29)/10);return{q:c+" − "+e+" ＝",a:""+trimNum(c-e)};}
+    if(t===3){var f=ri(1,9);return{q:"0.1 が "+f+" こ集まった数はいくつですか？",a:""+trimNum(f/10)};}
+    var g=trimNum(ri(101,999)/100),h=trimNum(ri(101,899)/100);return{q:g+" ＋ "+h+" ＝",a:""+trimNum(g+h)};},
+  /* ---- 小学4年 ---- */
+  e4_calc: function(d){
+    var t=ri(1,4);
+    if(t===1){var dn=pick([6,8,10,12]),a=ri(1,dn-1),b=ri(1,dn-1);return{q:fracHTML(a,dn)+" ＋ "+fracHTML(b,dn)+" ＝（約分もすること）",a:fracText(a+b,dn)};}
+    if(t===2){var a2=trimNum(ri(21,99)/10),b2=ri(2,9);return{q:a2+" × "+b2+" ＝",a:""+trimNum(a2*b2)};}
+    if(t===3){var q=trimNum(ri(21,99)/10),dv=ri(2,9);return{q:trimNum(q*dv)+" ÷ "+dv+" ＝",a:""+q};}
+    var dn4=pick([8,9,12]),c=ri(4,dn4+4),e=ri(1,3);return{q:fracHTML(c,dn4)+" − "+fracHTML(e,dn4)+" ＝（約分もすること）",a:fracText(c-e,dn4)};},
+  e4_area: function(d){
+    var t=ri(1,4);
+    if(t===1){var a=ri(3,15),b=ri(3,15);return{q:"たて "+a+" cm、横 "+b+" cm の長方形の面積は？",a:(a*b)+"cm²"};}
+    if(t===2){var c=ri(3,14);return{q:"1辺 "+c+" cm の正方形の面積は？",a:(c*c)+"cm²"};}
+    if(t===3){var e=ri(4,16),f=ri(2,10);if((e*f)%2)e++;return{q:"底辺 "+e+" cm、高さ "+f+" cm の三角形の面積は？",a:(e*f/2)+"cm²"};}
+    var g=ri(2,12),h=ri(2,9);return{q:"1辺 "+g+" m の正方形の形をした花だんの面積を a（アール）で表すと？（1a＝100m²）",a:(g*g/100)+"a ※"+(g*g)+"m²"};},
+  e4_angle: function(d){
+    var t=ri(1,4);
+    if(t===1){var a=ri(25,160);return{q:"まっすぐな角（180°）から "+a+"° を引いた角は何度？",a:(180-a)+"°"};}
+    if(t===2){var b=ri(20,80),c=ri(20,80);return{q:"三角形の2つの角が "+b+"° と "+c+"° のとき、残りの角は何度？",a:(180-b-c)+"°"};}
+    if(t===3){var e=ri(15,75);return{q:"90° の角から "+e+"° を引いた角は何度？",a:(90-e)+"°"};}
+    var f=ri(2,6);return{q:f+" 周（1周＝360°）回転すると、全部で何度回転したことになりますか？",a:(f*360)+"°"};},
+  /* ---- 小学5年 ---- */
+  e5_frac: function(d){
+    var t=ri(1,5);
+    if(t===1){var n=ri(4,36),dn=ri(2,12);var g=gcd(n,dn);if(g===1)n*=2,g=gcd(n,dn);return{q:"約分しよう。　"+fracHTML(n,dn),a:fracText(n,dn)};}
+    if(t===2){var d1=pick([2,3,4,6]),d2=d1*ri(2,3),a=ri(1,d1-1||1),b=ri(1,d2-1);return{q:fracHTML(a,d1)+" ＋ "+fracHTML(b,d2)+" ＝（通分して計算）",a:fracText(a*d2+b*d1,d1*d2)};}
+    if(t===3){var d3=pick([3,4,5,6]),d4=d3*2,a3=ri(1,d4-1),b3=ri(1,d3-1);return{q:fracHTML(a3,d4)+" − "+fracHTML(b3,d3)+" ＝（通分して計算）",a:fracText(a3-b3*2,d4)};}
+    if(t===4){var dn=pick([6,8,9,12]),w=ri(1,3),n2=ri(1,dn-1);return{q:"帯分数に直そう。　"+fracHTML(w*dn+n2,dn),a:w+"と"+fracText(n2,dn)};}
+    var dn5=pick([4,5,6]),w5=ri(1,3),n5=ri(1,dn5-1);return{q:"仮分数に直そう。　"+w5+"と"+fracHTML(n5,dn5),a:fracText(w5*dn5+n5,dn5)};},
+  e5_percent: function(d){
+    var t=ri(1,5);
+    if(t===1){var p=pick([10,20,25,30,40,50,60,75,80,90]);return{q:p+"％ を小数で表すと？",a:""+(p/100)};}
+    if(t===2){var base=pick([200,300,400,500,800,1000]),p2=pick([10,20,30,40,50]);return{q:base+" 円の "+p2+"％ は何円ですか？",a:(base*p2/100)+"円"};}
+    if(t===3){var price=pick([500,800,1000,1200,2000]),off=pick([10,20,30]);return{q:price+" 円の品物が "+off+"％ 引きで売っています。代金は何円ですか？",a:(price*(100-off)/100)+"円"};}
+    if(t===4){var tot=pick([40,50,80,100]),hit=tot/5*ri(1,4);return{q:"全部で "+tot+" 本のうち "+hit+" 本が当たりです。当たりの割合は何％ですか？",a:(hit/tot*100)+"％"};}
+    var dec=pick([0.05,0.15,0.35,0.6,0.85]);return{q:"小数 "+dec+" を百分率（％）で表すと？",a:(dec*100)+"％"};},
+  e5_decimal: function(d){
+    var t=ri(1,4);
+    if(t===1){var a=trimNum(ri(12,99)/10),b=trimNum(ri(12,99)/10);return{q:a+" × "+b+" ＝",a:""+trimNum(a*b)};}
+    if(t===2){var q=trimNum(ri(12,99)/10),dv=pick([2,4,5,8]);return{q:trimNum(q*dv)+" ÷ "+dv+" ＝",a:""+q};}
+    if(t===3){var c=trimNum(ri(105,999)/100),e=ri(2,9);return{q:c+" × "+e+" ＝",a:""+trimNum(c*e)};}
+    var len=trimNum(ri(24,96)/10),n=ri(3,8);return{q:"1本 "+len+" m のリボンを "+n+" 本つなげると、全部で何mですか？",a:trimNum(len*n)+"m"};},
+  /* ---- 小学6年 ---- */
+  e6_frac: function(d){
+    var t=ri(1,5);
+    if(t===1){var d1=pick([2,3,4,5,6]),a=ri(1,d1+3),d2=pick([2,3,4,5]),b=ri(1,d2+2);return{q:fracHTML(a,d1)+" × "+fracHTML(b,d2)+" ＝（約分もすること）",a:fracText(a*b,d1*d2)};}
+    if(t===2){var d3=pick([3,4,5,6]),a2=ri(1,d3+2),d4=pick([2,3,4]),b2=ri(1,d4+1);return{q:fracHTML(a2,d3)+" ÷ "+fracHTML(b2,d4)+" ＝",a:fracText(a2*d4,d3*b2)};}
+    if(t===3){var n=ri(2,9),dn=pick([2,3,4,6]),a3=ri(1,dn+2);return{q:fracHTML(a3,dn)+" × "+n+" ＝",a:fracText(a3*n,dn)};}
+    if(t===4){var dn4=pick([2,3,4,6]),b4=ri(1,dn4-1),ppl=ri(2,9);return{q:mixedText(ppl*b4,dn4)+" L のジュースを "+fracHTML(b4,dn4)+" L ずつ分けると、何人に分けられますか？",a:ppl+"人"};}
+    var d5=pick([2,3,4]),a5=ri(2,7),n5=ri(2,8);return{q:fracHTML(a5,d5)+" ÷ "+n5+" ＝",a:fracText(a5,d5*n5)};},
+  e6_ratio: function(d){
+    var t=ri(1,5);
+    if(t===1){var g=ri(2,6),a=g*ri(2,5),b=g*ri(2,5);return{q:"比を簡単にしよう。　"+a+" ： "+b,a:(a/g)+"："+(b/g)};}
+    if(t===2){var x=ri(2,9),k=ri(2,6);return{q:"x ： 3 ＝ "+(x*k)+" ： "+(3*k)+"　xに入る数は？",a:""+x};}
+    if(t===3){var r1=ri(1,4),r2=ri(1,4),unit=ri(10,40);return{q:"砂糖と小麦粉を "+r1+"："+r2+" の比で混ぜます。合計 "+((r1+r2)*unit)+" g のとき、砂糖は何gですか？",a:(r1*unit)+"g"};}
+    if(t===4){var a4=ri(2,8),b4=ri(2,8),k4=ri(2,5);return{q:a4+"："+b4+" と同じ比で、前の項が "+(a4*k4)+" のとき、後ろの項は？",a:""+(b4*k4)};}
+    var tot=pick([60,90,120]),r=pick([[1,2],[2,3],[3,2],[1,3]]);var u=tot/(r[0]+r[1]);return{q:tot+" cm のひもを "+r[0]+"："+r[1]+" に分けます。長い方は何cmですか？",a:(Math.max(r[0],r[1])*u)+"cm"};},
+  e6_speed: function(d){
+    var t=ri(1,4);
+    if(t===1){var v=pick([40,50,60,80,300,900]),tm=ri(2,6);return{q:"時速 "+v+" km で "+tm+" 時間走ると、何km進みますか？",a:(v*tm)+"km"};}
+    if(t===2){var v2=pick([4,5,6,60,80]),dist=v2*ri(2,5);return{q:dist+" km を時速 "+v2+" km で進むと、何時間かかりますか？",a:(dist/v2)+"時間"};}
+    if(t===3){var tm3=pick([2,3,4,5]),sp3=pick([30,40,50,60,80]);return{q:(sp3*tm3)+" km を "+tm3+" 時間で走りました。時速は何kmですか？",a:sp3+"km/時"};}
+    var m=pick([60,80,100,120]),s=pick([10,12,15,20,30]);return{q:"秒速 "+(m/s)+" m で走る人は、"+s+" 秒で何m進みますか？",a:m+"m"};},
+  /* ---- 中学1年 ---- */
+  j1_sign: function(d){
+    var M=d===1?9:(d===2?15:25); var t=ri(1,5);
+    if(t===1){var a=ri(2,M),b=ri(2,M);return{q:"(−"+a+") ＋ (−"+b+") ＝",a:""+(-(a+b))};}
+    if(t===2){var a2=ri(2,M),b2=ri(2,M);return{q:a2+" − (−"+b2+") ＝",a:""+(a2+b2)};}
+    if(t===3){var a3=ri(2,9),b3=ri(2,9);return{q:"(−"+a3+") × "+b3+" ＝",a:""+(-a3*b3)};}
+    if(t===4){var b4=ri(2,9),q4=ri(2,9);return{q:"(−"+(b4*q4)+") ÷ "+b4+" ＝",a:""+(-q4)};}
+    var e=ri(2,5);return{q:"(−"+e+")² ＝",a:""+(e*e)};},
+  j1_expr: function(d){
+    var t=ri(1,5);
+    if(t===1){var a=ri(2,9),b=ri(2,9);return{q:a+"x ＋ "+b+"x ＝",a:(a+b)+"x"};}
+    if(t===2){var a2=ri(5,12),b2=ri(2,4);return{q:a2+"x − "+b2+"x ＝",a:(a2-b2)+"x"};}
+    if(t===3){var a3=ri(2,8),b3=ri(2,8),c=ri(2,8),e3=ri(1,b3);return{q:"("+a3+"x ＋ "+b3+") ＋ ("+c+"x − "+e3+") を簡単にせよ",a:(a3+c)+"x ＋ "+(b3-e3)};}
+    if(t===4){var k=ri(2,6),a4=ri(2,7),b4=ri(1,6);return{q:k+"("+a4+"x − "+b4+") を展開せよ",a:(k*a4)+"x − "+(k*b4)};}
+    var xv=ri(2,6),a5=ri(2,7),b5=ri(1,9);return{q:"x ＝ "+xv+" のとき、"+a5+"x − "+b5+" の値は？",a:""+(a5*xv-b5)};},
+  j1_eq: function(d){
+    var t=ri(1,4);
+    if(t===1){var x=ri(-9,12),b=ri(2,15);return{q:"x ＋ "+b+" ＝ "+(x+b)+"　を解け",a:"x ＝ "+x};}
+    if(t===2){var x2=ri(2,11),a2=ri(2,9);return{q:a2+"x ＝ "+(a2*x2)+"　を解け",a:"x ＝ "+x2};}
+    if(t===3){var x3=ri(2,9),a3=ri(2,7),b3=ri(1,12);return{q:a3+"x ＋ "+b3+" ＝ "+(a3*x3+b3)+"　を解け",a:"x ＝ "+x3};}
+    var x4=ri(2,8),a4=ri(2,6),b4=ri(2,10),c4=ri(2,5);return{q:a4+"(x ＋ "+b4+") ＝ "+(a4*(x4+b4))+"　を解け",a:"x ＝ "+x4};},
+  /* ---- 中学2年 ---- */
+  j2_renritsu: function(d){
+    var t=ri(1,3);
+    var x=ri(-6,9),y=ri(-6,9); if(x===0)x=3; if(y===0)y=-2;
+    var a=ri(1,5),b=ri(1,5),c=a*x+b*y;
+    var a2=ri(1,5),b2=-ri(1,4),c2=a2*x+b2*y; if(b2===0)b2=1;
+    if(t===1){return{q:"連立方程式を解け。<br>　"+term(a,"x",true)+term(b,"y",false)+" ＝ "+c+"<br>　"+term(a2,"x",true)+term(b2,"y",false)+" ＝ "+c2,a:"x ＝ "+x+"、y ＝ "+y};}
+    if(t===2){var s=x+y,dv=x-y;return{q:"連立方程式を解け。<br>　x ＋ y ＝ "+s+"<br>　x − y ＝ "+dv,a:"x ＝ "+x+"、y ＝ "+y};}
+    var tot=ri(8,20),price1=pick([80,100,120]),price2=pick([150,180,200]);var n1=ri(2,tot-2),n2=tot-n1;
+    return{q:"りんご "+price1+" 円、みかん "+price2+" 円。合わせて "+tot+" 個買って "+(n1*price1+n2*price2)+" 円でした。りんごとみかんはそれぞれ何個？",a:"りんご "+n1+" 個、みかん "+n2+" 個"};},
+  j2_func: function(d){
+    var t=ri(1,5);
+    if(t===1){var a=ri(-5,6);if(a===0)a=3;var b=ri(-8,8);var x=ri(-4,6);return{q:"y ＝ "+term(a,"x",true)+numTerm(b,false)+" で、x ＝ "+x+" のとき y は？",a:"y ＝ "+(a*x+b)};}
+    if(t===2){var a2=pick([-3,-2,-1,1,2,3,4]),b2=ri(-6,6);return{q:"一次関数 y ＝ "+term(a2,"x",true)+numTerm(b2,false)+" の変化の割合は？",a:""+a2};}
+    if(t===3){var a3=pick([1,2,3,-1,-2]),b3=ri(-5,5);return{q:"y ＝ "+term(a3,"x",true)+numTerm(b3,false)+" で、y ＝ "+(a3*4+b3)+" のとき x は？",a:"x ＝ 4"};}
+    if(t===4){var x1=ri(-3,2),y1=ri(-5,5),a4=pick([1,2,-1,-2,3]);var b4=y1-a4*x1;return{q:"変化の割合が "+a4+" で、x ＝ "+x1+" のとき y ＝ "+y1+" である一次関数の式は？",a:"y ＝ "+term(a4,"x",true)+numTerm(b4,false)};}
+    var a5=pick([2,3,-2]),b5=ri(1,6);return{q:"y ＝ "+term(a5,"x",true)+numTerm(b5,false)+" のグラフと x 軸との交点の x 座標は？",a:"x ＝ "+trimNum(-b5/a5)};},
+  j2_expr: function(d){
+    var t=ri(1,5);
+    if(t===1){var a=ri(3,8),b=ri(2,8),c1=ri(1,a-1),c2=ri(1,5);return{q:"("+a+"a ＋ "+b+"b) − ("+c1+"a − "+c2+"b) を簡単にせよ",a:(a-c1)+"a ＋ "+(b+c2)+"b"};}
+    if(t===2){var a2=ri(2,6),b2=ri(2,6);return{q:a2+"x × "+b2+"y ＝",a:(a2*b2)+"xy"};}
+    if(t===3){var k=ri(2,6),a3=ri(2,5);return{q:"("+(k*a3)+"x²y) ÷ ("+k+"x) ＝",a:a3+"xy"};}
+    if(t===4){var n=ri(3,12);return{q:"連続する3つの整数の和が "+(3*n)+" のとき、まん中の整数は？（n を使った説明も可）",a:""+n};}
+    var a5=ri(2,9);return{q:"等式 2x ＋ "+a5+"y ＝ "+(a5*3)+" を y について解け（x の式で表せ）",a:"y ＝ (−2x ＋ "+(a5*3)+") ÷ "+a5};},
+  /* ---- 中学3年 ---- */
+  j3_expand: function(d){
+    var t=ri(1,5);
+    if(t===1){var a=ri(2,9),b=ri(2,9);return{q:"(x ＋ "+a+")(x ＋ "+b+") を展開せよ",a:"x² ＋ "+(a+b)+"x ＋ "+(a*b)};}
+    if(t===2){var a2=ri(2,9),b2=ri(2,9);return{q:"x² ＋ "+(a2+b2)+"x ＋ "+(a2*b2)+" を因数分解せよ",a:"(x ＋ "+a2+")(x ＋ "+b2+")"};}
+    if(t===3){var a3=ri(2,12);return{q:"(x ＋ "+a3+")² を展開せよ",a:"x² ＋ "+(2*a3)+"x ＋ "+(a3*a3)};}
+    if(t===4){var a4=ri(2,12);return{q:"(x ＋ "+a4+")(x − "+a4+") を展開せよ",a:"x² − "+(a4*a4)};}
+    var a5=ri(3,10),b5=ri(2,6);return{q:"x² − "+(a5+b5)+"x ＋ "+(a5*b5)+" を因数分解せよ",a:"(x − "+a5+")(x − "+b5+")"};},
+  j3_sqrt: function(d){
+    var t=ri(1,5);
+    if(t===1){var k=ri(2,6),m=pick([2,3,5,6,7]);return{q:"√"+(k*k*m)+" を簡単にせよ（a√b の形に）",a:k+"√"+m};}
+    if(t===2){var a=ri(2,8),b=ri(2,8);var p=a*b,sq=Math.sqrt(p);var ans=(sq===Math.round(sq))?(""+Math.round(sq)):("√"+p);return{q:"√"+a+" × √"+b+" ＝",a:ans};}
+    if(t===3){var a3=ri(2,9);return{q:"√"+(a3*a3)+" ＝",a:""+a3};}
+    if(t===4){var a4=ri(2,7),b4=ri(2,7);return{q:a4+"√3 ＋ "+b4+"√3 ＝",a:(a4+b4)+"√3"};}
+    var a5=pick([2,3,5,6,10]);return{q:"√"+a5+" のおよその値を、小数第1位までで答えよ",a:"約 "+(Math.sqrt(a5).toFixed(1))};},
+  j3_quad: function(d){
+    var t=ri(1,4);
+    if(t===1){var r1=ri(1,8),r2=ri(1,8);if(r1===r2)r2++;return{q:"x² − "+(r1+r2)+"x ＋ "+(r1*r2)+" ＝ 0 を解け",a:"x ＝ "+r1+"、"+r2};}
+    if(t===2){var r=ri(2,10);return{q:"x² ＝ "+(r*r)+" を解け",a:"x ＝ ±"+r};}
+    if(t===3){var r3=ri(2,8),b=ri(1,6);return{q:"(x − "+r3+")² ＝ "+(b*b)+" を解け",a:"x ＝ "+(r3+b)+"、"+(r3-b)};}
+    var r4=ri(1,7),r5=-ri(1,6);var sm=r4+r5;var mid=(sm===0)?"":((sm>0?" ＋ "+sm:" − "+Math.abs(sm))+"x");return{q:"x²"+mid+" − "+Math.abs(r4*r5)+" ＝ 0 を解け（符号に注意）",a:"x ＝ "+r4+"、"+sgn(r5)};},
+  /* ---- 高校1年 ---- */
+  h1_expr: function(d){
+    var t=ri(1,5);
+    if(t===1){var a=ri(2,9),b=ri(2,6);var mid=a-b;var midStr=mid===0?"":(mid>0?" ＋ "+mid+"x":" − "+(-mid)+"x");return{q:"(x ＋ "+a+")(x − "+b+") を展開せよ",a:"x²"+midStr+" − "+(a*b)};}
+    if(t===2){var p=ri(2,9),q2=ri(2,9);return{q:"x² ＋ "+(p+q2)+"x ＋ "+(p*q2)+" を因数分解せよ",a:"(x ＋ "+p+")(x ＋ "+q2+")"};}
+    if(t===3){var p3=ri(2,9),q3=ri(2,9);var mid3=p3-q3;var midStr3=mid3===0?"":(mid3>0?" ＋ "+mid3+"x":" − "+(-mid3)+"x");return{q:"x²"+midStr3+" − "+(p3*q3)+" を因数分解せよ",a:"(x ＋ "+p3+")(x − "+q3+")"};}
+    if(t===4){var a4=ri(2,12);if(ri(1,2)===1){return{q:"x² ＋ "+(2*a4)+"x ＋ "+(a4*a4)+" を因数分解せよ",a:"(x ＋ "+a4+")²"};}return{q:"x² − "+(a4*a4)+" を因数分解せよ",a:"(x ＋ "+a4+")(x − "+a4+")"};}
+    var a5=ri(2,6),b5=ri(1,5);var mid5=3*a5-2*b5;var midStr5=mid5===0?"":(mid5>0?" ＋ "+mid5+"x":" − "+(-mid5)+"x");return{q:"(2x ＋ "+a5+")(3x − "+b5+") を展開せよ",a:"6x²"+midStr5+" − "+(a5*b5)};},
+  h1_quadfunc: function(d){
+    var t=ri(1,5);
+    if(t===1){var h=ri(-4,4),k=ri(-5,5);if(h===0)h=2;return{q:"y ＝ (x "+(h>=0?"− "+h:"＋ "+(-h))+")² "+(k>=0?"＋ "+k:"− "+(-k))+" の頂点の座標は？",a:"("+h+", "+k+")"};}
+    if(t===2){var a=ri(1,4),h2=ri(-3,3);var yv=ri(-4,6);return{q:"y ＝ "+(a===1?"":a)+"x² "+( -2*a*h2>=0?"＋ "+(-2*a*h2):"− "+(2*a*h2))+"x の軸の方程式は？（平方完成を利用）※頂点のx座標",a:"x ＝ "+h2};}
+    if(t===3){var r1=ri(1,6),r2=ri(1,6);if(r1===r2)r2++;return{q:"二次方程式 x² − "+(r1+r2)+"x ＋ "+(r1*r2)+" ＝ 0 を解け",a:"x ＝ "+r1+"、"+r2};}
+    if(t===4){var m=ri(1,5);return{q:"y ＝ x² − 2x ＋ "+(1+m*m)+" と x 軸との共有点の個数は？（判別式 D を使う）",a:"0個（D ＝ "+(-4*m*m)+" ＜ 0）"};}
+    var hv=ri(1,3),hi=hv+ri(0,2);return{q:"y ＝ (x − "+hv+")² ＋ 1 （0 ≦ x ≦ "+hi+"）の最小値は？",a:"1（x ＝ "+hv+" のとき）"};},
+  h1_trig: function(d){
+    var t=ri(1,5);
+    if(t===1){var tri=pick([[3,4,5],[5,12,13],[6,8,10],[8,15,17]]);return{q:"直角三角形で、斜辺が "+tri[2]+"、底辺が "+tri[0]+"、高さが "+tri[1]+" のとき、底辺と斜辺のなす角を θ として sinθ、cosθ、tanθ を求めよ",a:"sinθ ＝ "+fracText(tri[1],tri[2])+"、cosθ ＝ "+fracText(tri[0],tri[2])+"、tanθ ＝ "+fracText(tri[1],tri[0])};}
+    if(t===2){return{q:"sin30°、cos60°、tan45° の値をそれぞれ答えよ",a:"sin30° ＝ 1/2、cos60° ＝ 1/2、tan45° ＝ 1"};}
+    if(t===3){var b=ri(4,10);return{q:"三角形ABCで、A ＝ 30°、a ＝ "+b+" のとき、外接円の半径 R は？（正弦定理 a／sinA ＝ 2R を使う）",a:"R ＝ "+b};}
+    if(t===4){var a4=3,b4=5;return{q:"三角形の2辺が "+a4+" と "+b4+"、その間の角が 60° のとき、面積 S は？",a:"S ＝ (15√3)／4"};}
+    var deg=pick([0,30,45,60,90,120,135,150,180]);var vals={0:"0",30:"1/2",45:"√2/2",60:"√3/2",90:"1",120:"√3/2",135:"√2/2",150:"1/2",180:"0"};return{q:"sin"+deg+"° の値は？",a:vals[deg]};},
+  h1_data: function(d){
+    var t=ri(1,4);
+    if(t===1){var a=[ri(2,9),ri(2,9),ri(2,9),ri(2,9),ri(2,9)];var sum=a.reduce(function(s,x){return s+x;},0);return{q:"データ "+a.join(", ")+" の平均値は？",a:""+trimNum(sum/5)};}
+    if(t===2){var b=[ri(1,5),ri(6,9),ri(10,15),ri(16,20),ri(21,30)].sort(function(x,y){return x-y;});return{q:"データ "+b.join(", ")+" の中央値は？",a:""+b[2]};}
+    if(t===3){var c=[2,4,4,4,5,5,7,9];return{q:"データ 2, 4, 4, 4, 5, 5, 7, 9 の平均は 5 です。分散を求めよ",a:"4"};}
+    var dd=[ri(5,10),ri(11,15),ri(16,20),ri(21,25),ri(26,35)];return{q:"データ "+dd.join(", ")+" の範囲（最大値−最小値）は？",a:""+(Math.max.apply(null,dd)-Math.min.apply(null,dd))};},
+  /* ---- 高校2年 ---- */
+  h2_complex: function(d){
+    var t=ri(1,5);
+    if(t===1){var a=ri(1,6),b=ri(1,6),c=ri(1,6),e=ri(1,6);return{q:"(" + a + " ＋ " + b + "i) ＋ (" + c + " − " + e + "i) を計算せよ（i は虚数単位）",a:(a+c)+" ＋ "+(b-e)+"i"};}
+    if(t===2){var a2=ri(1,5),b2=ri(1,5);return{q:"(" + a2 + " ＋ " + b2 + "i)(1 ＋ i) を計算せよ",a:(a2-b2)+" ＋ "+(a2+b2)+"i"};}
+    if(t===3){return{q:"i²、i³、i⁴ の値をそれぞれ答えよ",a:"i² ＝ −1、i³ ＝ −i、i⁴ ＝ 1"};}
+    if(t===4){var r=ri(1,5);return{q:"二次方程式 x² ＋ "+(r*r)+" ＝ 0 を解け（複素数の範囲で）",a:"x ＝ ±"+r+"i"};}
+    var a5=ri(1,4);return{q:"x ＝ "+a5+" ＋ √(−3) を実数と虚数を使って表すと？（√(−3) ＝ √3 i）",a:a5+" ＋ √3 i"};},
+  h2_trigfunc: function(d){
+    var t=ri(1,5);
+    if(t===1){var deg=pick([30,45,60,90,180,270,360]);var rad={30:"π/6",45:"π/4",60:"π/3",90:"π/2",180:"π",270:"3π/2",360:"2π"};return{q:deg+"° を弧度法（ラジアン）で表すと？",a:rad[deg]};}
+    if(t===2){return{q:"sin(π/6)、cos(π/3)、tan(π/4) の値をそれぞれ答えよ",a:"1/2、1/2、1"};}
+    if(t===3){return{q:"sinθ ＝ 1/2 （0 ≦ θ ＜ 2π）を満たす θ は？",a:"θ ＝ π/6、5π/6"};}
+    if(t===4){return{q:"加法定理を使って sin75° ＝ sin(45°＋30°) の値を求めよ",a:"(√6 ＋ √2)／4"};}
+    return{q:"y ＝ sin x の最大値と最小値、周期は？",a:"最大値 1、最小値 −1、周期 2π"};},
+  h2_exp_log: function(d){
+    var t=ri(1,5);
+    if(t===1){var e=ri(2,4);return{q:"2^"+e+" × 2^"+(e+1)+" を計算せよ（^ は累乗）",a:""+Math.pow(2,2*e+1)+"（＝ 2^"+(2*e+1)+"）"};}
+    if(t===2){var b=pick([2,3,5,10]),k=ri(2,3);return{q:"log"+b+" "+Math.pow(b,k)+" の値は？（底は "+b+"）",a:""+k};}
+    if(t===3){return{q:"log2 8 ＋ log2 4 の値は？（底は 2）",a:"5"};}
+    if(t===4){var k4=ri(2,5);return{q:"方程式 3^x ＝ "+Math.pow(3,k4)+" を満たす x は？",a:"x ＝ "+k4};}
+    return{q:"log10 1000 の値は？（底は 10）",a:"3"};},
+  h2_diff_int: function(d){
+    var t=ri(1,5);
+    if(t===1){var a=ri(2,5);return{q:"f(x) ＝ x^"+a+" の導関数 f′(x) は？（^ は累乗）",a:a+"x^"+(a-1)};}
+    if(t===2){var a2=ri(2,6),b2=ri(1,8);return{q:"f(x) ＝ "+a2+"x² ＋ "+b2+"x の導関数 f′(x) は？",a:(2*a2)+"x ＋ "+b2};}
+    if(t===3){var x0=ri(1,4);return{q:"曲線 y ＝ x² 上の点 x ＝ "+x0+" における接線の傾きは？",a:""+(2*x0)};}
+    if(t===4){var b4=ri(1,3);return{q:"∫[0→"+b4+"] x dx を計算せよ（定積分）",a:fracText(b4*b4,2)};}
+    return{q:"∫ x² dx （不定積分、積分定数 C を含む）は？",a:"x³/3 ＋ C"};},
+  /* ---- 高校3年 ---- */
+  h3_seq: function(d){
+    var t=ri(1,5);
+    if(t===1){var a=ri(1,9),dd=ri(2,6),n=ri(5,10);return{q:"初項 "+a+"、公差 "+dd+" の等差数列の第 "+n+" 項は？",a:""+(a+(n-1)*dd)};}
+    if(t===2){var a2=ri(1,4),r=pick([2,3]),n2=ri(3,5);return{q:"初項 "+a2+"、公比 "+r+" の等比数列の第 "+n2+" 項は？",a:""+(a2*Math.pow(r,n2-1))};}
+    if(t===3){var a3=ri(1,6),d3=ri(1,5),n3=10;var an=a3+(n3-1)*d3;return{q:"初項 "+a3+"、公差 "+d3+" の等差数列の初項から第10項までの和は？",a:""+(n3*(a3+an)/2)};}
+    if(t===4){var n4=ri(4,8);return{q:"Σ[k=1→"+n4+"] k （1から "+n4+" までの和）は？",a:""+(n4*(n4+1)/2)};}
+    var a5=1,r5=2,n5=ri(4,6);return{q:"初項 1、公比 2 の等比数列の初項から第 "+n5+" 項までの和は？",a:""+(Math.pow(2,n5)-1)};},
+  h3_vector: function(d){
+    var t=ri(1,5);
+    if(t===1){var a=ri(1,6),b=ri(1,6);var len=Math.sqrt(a*a+b*b);var ans=(len===Math.round(len))?""+Math.round(len):"√"+(a*a+b*b);return{q:"ベクトル a ＝ ("+a+", "+b+") の大きさ |a| は？",a:ans};}
+    if(t===2){var a2=ri(1,5),b2=ri(1,5),c2=ri(1,5),d2=ri(1,5);return{q:"a ＝ ("+a2+", "+b2+")、b ＝ ("+c2+", "+d2+") のとき、内積 a・b は？",a:""+(a2*c2+b2*d2)};}
+    if(t===3){var a3=ri(1,6),b3=ri(1,6),c3=ri(1,6),d3=ri(1,6);return{q:"a ＝ ("+a3+", "+b3+")、b ＝ ("+c3+", "+d3+") のとき、a ＋ b の成分は？",a:"("+(a3+c3)+", "+(b3+d3)+")"};}
+    if(t===4){return{q:"a ＝ (2, 1)、b ＝ (−1, 2) のとき、a と b は垂直ですか？ 内積で確かめて答えよ",a:"垂直である（内積 ＝ 0）"};}
+    var k=ri(2,4),a5=ri(1,4),b5=ri(1,4);return{q:"a ＝ ("+a5+", "+b5+") のとき、"+k+"a の成分は？",a:"("+(k*a5)+", "+(k*b5)+")"};},
+  h3_limit_diff: function(d){
+    var t=ri(1,5);
+    if(t===1){var c=ri(1,8),x0=ri(1,4);return{q:"lim[x→"+x0+"] ("+"x² ＋ "+c+") の値は？",a:""+(x0*x0+c)};}
+    if(t===2){return{q:"lim[x→2] (x² − 4)／(x − 2) の値は？（因数分解して約分）",a:"4"};}
+    if(t===3){var a=ri(2,5);return{q:"f(x) ＝ x³ の導関数を定義にしたがうと f′(x) ＝ 3x² です。x ＝ "+a+" での微分係数 f′("+a+") は？",a:""+(3*a*a)};}
+    if(t===4){var a4=ri(2,4);return{q:"y ＝ x^"+a4+" を微分せよ（^ は累乗）",a:a4+"x^"+(a4-1)};}
+    return{q:"数列 1, 1/2, 1/3, 1/4, … の極限は？（n → ∞ で 1/n → ？）",a:"0"};},
+  h3_integral: function(d){
+    var t=ri(1,5);
+    if(t===1){var b=ri(1,3);return{q:"∫[0→"+b+"] x² dx を計算せよ",a:fracText(b*b*b,3)};}
+    if(t===2){var b2=ri(2,4);return{q:"∫[0→"+b2+"] 2x dx を計算せよ",a:""+(b2*b2)};}
+    if(t===3){return{q:"曲線 y ＝ x² と x 軸、直線 x ＝ 1、x ＝ 0 で囲まれた面積は？（∫[0→1] x² dx）",a:"1/3"};}
+    if(t===4){var a4=ri(2,4);return{q:"∫ "+a4+"x dx （不定積分、積分定数 C を含む）は？",a:(a4/2)+"x² ＋ C ※係数は "+fracText(a4,2)};}
+    return{q:"∫[1→2] (x ＋ 1) dx を計算せよ",a:"7/2（＝ 3.5）"};},
+  /* ---- 数学A ---- */
+  hA_prob: function(d){
+    var t=ri(1,5);
+    if(t===1){var n=ri(4,7);var f=1;for(var i=2;i<=n;i++)f*=i;return{q:n+" 人を一列に並べる方法は何通りですか？（"+n+"! を計算）",a:f+"通り"};}
+    if(t===2){var n2=ri(5,8),r=ri(2,3);var num=1,den=1;for(var j=0;j<r;j++){num*=(n2-j);den*=(j+1);}return{q:n2+" 人から "+r+" 人を選ぶ組み合わせ "+n2+"C"+r+" は何通りですか？",a:(num/den)+"通り"};}
+    if(t===3){return{q:"さいころを1回投げて、偶数の目が出る確率は？",a:"1/2"};}
+    if(t===4){var tot=pick([10,20]),red=tot/2;return{q:"赤玉 "+red+" 個、白玉 "+red+" 個が入った袋から1個取り出すとき、赤玉が出る確率は？",a:"1/2"};}
+    var n5=ri(3,5);return{q:"異なる "+n5+" 冊の本から2冊を選ぶ方法は何通りですか？（"+n5+"C2）",a:(n5*(n5-1)/2)+"通り"};},
+  hA_geom: function(d){
+    var t=ri(1,4);
+    if(t===1){var a=ri(30,70),b=ri(30,70);return{q:"三角形の2つの内角が "+a+"° と "+b+"° のとき、残りの内角と、その外角（残りの角の外角）は？",a:"内角 "+(180-a-b)+"°、外角 "+(a+b)+"°"};}
+    if(t===2){return{q:"1つの内角が 120° のとき、その外角は何度ですか？",a:"60°"};}
+    if(t===3){var n=pick([5,6,8,10]);return{q:"正"+n+"角形の1つの内角の大きさは？",a:((n-2)*180/n)+"°"};}
+    return{q:"円に内接する四角形の向かい合う角の和は何度ですか？",a:"180°"};},
+  hA_int: function(d){
+    var t=ri(1,5);
+    if(t===1){var a=ri(6,30);var cnt=0;for(var i=1;i<=a;i++)if(a%i===0)cnt++;return{q:a+" の正の約数は何個ありますか？",a:cnt+"個"};}
+    if(t===2){var x=ri(4,30),y=ri(4,30);return{q:x+" と "+y+" の最大公約数は？",a:""+gcd(x,y)};}
+    if(t===3){var a3=ri(6,20),b3=ri(6,20);return{q:a3+" と "+b3+" の最小公倍数は？",a:""+(a3*b3/gcd(a3,b3))};}
+    if(t===4){var q4=ri(3,9),dv=ri(3,9),r4=ri(1,dv-1);return{q:"整数 "+(dv*q4+r4)+" を "+dv+" で割ったときの商と余りは？",a:"商 "+q4+"、余り "+r4};}
+    return{q:"素数を小さい方から5つ答えよ",a:"2, 3, 5, 7, 11"};},
+  /* ---- 数学II ---- */
+  h2_geom_eq: function(d){
+    var t=ri(1,5);
+    if(t===1){var h=ri(1,4),k=ri(1,4),r=pick([3,4,5]);return{q:"中心 ("+h+", "+k+")、半径 "+r+" の円の方程式は？",a:"(x − "+h+")² ＋ (y − "+k+")² ＝ "+(r*r)};}
+    if(t===2){var x1=ri(0,4),y1=ri(0,4),x2=x1+ri(1,4),y2=y1+ri(1,4);return{q:"2点 ("+x1+", "+y1+")、("+x2+", "+y2+") の中点の座標は？",a:"("+trimNum((x1+x2)/2)+", "+trimNum((y1+y2)/2)+")"};}
+    if(t===3){var a=ri(1,5),b=ri(1,5);var dist=Math.sqrt(a*a+b*b);var ans=(dist===Math.round(dist))?""+Math.round(dist):"√"+(a*a+b*b);return{q:"原点と点 ("+a+", "+b+") の距離は？",a:ans};}
+    if(t===4){var m=ri(1,4),b4=ri(1,5);return{q:"直線 y ＝ "+m+"x ＋ "+b4+" と y 軸との交点の座標は？",a:"(0, "+b4+")"};}
+    return{q:"x² ＋ y² ＝ 25 の円の半径は？",a:"5"};},
+  /* ---- 数学B ---- */
+  hB_stat: function(d){
+    var t=ri(1,4);
+    if(t===1){return{q:"確率変数 X が値 0 を確率 1/2、値 1 を確率 1/2 でとるとき、期待値 E(X) は？",a:"1/2"};}
+    if(t===2){return{q:"さいころを1回投げたとき、出る目の期待値は？",a:"3.5（＝ 7/2）"};}
+    if(t===3){var p=pick([0.2,0.25,0.5]),n=pick([10,20,100]);return{q:"成功確率 "+p+" の試行を "+n+" 回行うとき、成功回数の期待値は？（n×p）",a:""+trimNum(n*p)};}
+    return{q:"コインを1回投げて表が出る確率が 1/2 のとき、裏が出る確率は？",a:"1/2"};},
+  /* ---- 数学III ---- */
+  h3_diff: function(d){
+    var t=ri(1,5);
+    if(t===1){var a=ri(2,4);return{q:"y ＝ x^"+a+" ＋ 2x を微分せよ（^ は累乗）",a:a+"x^"+(a-1)+" ＋ 2"};}
+    if(t===2){return{q:"y ＝ sin x を微分せよ",a:"cos x"};}
+    if(t===3){return{q:"y ＝ e^x を微分せよ（e はネイピア数）",a:"e^x"};}
+    if(t===4){return{q:"y ＝ log x （自然対数）を微分せよ",a:"1/x"};}
+    var x0=ri(1,3);return{q:"f(x) ＝ x³ − 3x の増減を調べるため f′(x) ＝ 0 となる x は？",a:"x ＝ ±1"};},
+  /* ---- 数学C ---- */
+  hC_curve: function(d){
+    var t=ri(1,4);
+    if(t===1){var a=pick([2,3,4,5]);return{q:"放物線 y² ＝ "+(4*a)+"x の焦点の座標は？",a:"("+a+", 0)"};}
+    if(t===2){var a2=pick([3,4,5]);return{q:"楕円 x²/"+(a2*a2)+" ＋ y²/9 ＝ 1 の長軸の長さは？（a＞3 とする）",a:""+(2*a2)};}
+    if(t===3){return{q:"双曲線 x²/16 − y²/9 ＝ 1 の漸近線の方程式は？",a:"y ＝ ±(3/4)x"};}
+    return{q:"放物線 y ＝ x² を x 軸方向に 2、y 軸方向に 1 だけ平行移動した式は？",a:"y ＝ (x − 2)² ＋ 1"};},
+  hC_complex_plane: function(d){
+    var t=ri(1,5);
+    if(t===1){var a=ri(1,5),b=ri(1,5);var m=Math.sqrt(a*a+b*b);var ans=(m===Math.round(m))?""+Math.round(m):"√"+(a*a+b*b);return{q:"複素数 "+a+" ＋ "+b+"i の絶対値は？",a:ans};}
+    if(t===2){var a2=ri(1,6),b2=ri(1,6);return{q:"z ＝ "+a2+" ＋ "+b2+"i の共役複素数 z̄ は？",a:a2+" − "+b2+"i"};}
+    if(t===3){return{q:"複素数 1 ＋ i を極形式で表すと？（絶対値 √2、偏角 π/4）",a:"√2 (cos π/4 ＋ i sin π/4)"};}
+    if(t===4){var a4=ri(1,5);return{q:"点 "+a4+" ＋ 2i を実軸について対称移動した点が表す複素数は？",a:a4+" − 2i"};}
+    return{q:"i を3回かけた i³ の値は？",a:"−i"};},
+  /* ---- 数学I 追加 ---- */
+  h1_ineq: function(d){
+    var t=ri(1,5);
+    if(t===1){var a=ri(2,6),ans=ri(2,7),b=ri(1,a*ans-1);var c=a*ans-b;return{q:"一次不等式 "+a+"x − "+b+" ＞ "+c+" を解け",a:"x ＞ "+ans};}
+    if(t===2){var a2=ri(2,12),b2=ri(1,9);return{q:"| x − "+a2+" | ＝ "+b2+" を満たす x は？",a:"x ＝ "+(a2+b2)+"、"+(a2-b2)};}
+    if(t===3){var a3=ri(2,6),ans3=ri(1,6),b3=ri(2,12);var c3=b3-a3*ans3;return{q:"一次不等式 −"+a3+"x ＋ "+b3+" ＜ "+c3+" を解け（符号の向きに注意）",a:"x ＞ "+ans3};}
+    if(t===4){var lo=ri(-4,2),hi=lo+ri(3,6);var cnt=0;for(var i=lo+1;i<hi;i++)cnt++;return{q:lo+" ＜ x ＜ "+hi+" を満たす整数 x は何個ありますか？",a:cnt+"個"};}
+    var a5=ri(1,10),b5=ri(1,8);return{q:"| x − "+a5+" | ＜ "+b5+" を満たす x の範囲は？",a:(a5-b5)+" ＜ x ＜ "+(a5+b5)};},
+  h1_quadeq: function(d){
+    var t=ri(1,5);
+    if(t===1){var r1=ri(1,8),r2=ri(1,8);if(r1===r2)r2++;return{q:"二次方程式 x² − "+(r1+r2)+"x ＋ "+(r1*r2)+" ＝ 0 を解け",a:"x ＝ "+r1+"、"+r2};}
+    if(t===2){var b=ri(2,9),a2=ri(1,3),c=ri(1,6);return{q:"二次方程式 "+(a2===1?"":a2)+"x² ＋ "+b+"x ＋ "+c+" ＝ 0 の判別式 D の値は？",a:"D ＝ "+(b*b-4*a2*c)};}
+    if(t===3){var m=ri(1,5);return{q:"y ＝ x² − 2x ＋ "+(1+m*m)+" と x 軸との共有点の個数は？（判別式を使う）",a:"0個（D ＝ "+(-4*m*m)+" ＜ 0）"};}
+    if(t===4){var s1=ri(1,6),s2=s1+ri(1,5);return{q:"二次不等式 x² − "+(s1+s2)+"x ＋ "+(s1*s2)+" ＜ 0 を解け",a:s1+" ＜ x ＜ "+s2};}
+    var h=ri(-4,4);if(h===0)h=3;var k=ri(-5,5);return{q:"y ＝ (x "+(h>=0?"− "+h:"＋ "+(-h))+")² "+(k>=0?"＋ "+k:"− "+(-k))+" の最小値または最大値と、そのときの x は？",a:(k>=0?"最小値 ":"最小値 ")+k+"（x ＝ "+h+" のとき）"};},
+  h1_sine_cosine: function(d){
+    var t=ri(1,5);
+    if(t===1){var b=ri(4,12);return{q:"三角形ABCで A ＝ 30°、a ＝ "+b+" のとき、外接円の半径 R は？（正弦定理を使う）",a:"R ＝ "+b};}
+    if(t===2){var pr=pick([[3,8,7],[5,8,7],[8,15,13]]);return{q:"三角形の2辺が "+pr[0]+" と "+pr[1]+"、その間の角が 60° のとき、向かいの辺の長さは？（余弦定理を使う）",a:""+pr[2]};}
+    if(t===3){var a3=pick([3,4,6]),b3=pick([4,5,8]);return{q:"三角形の2辺が "+a3+" と "+b3+"、その間の角が 60° のとき、面積 S は？",a:"S ＝ "+fracText(a3*b3,4)+"√3"};}
+    if(t===4){var R=ri(3,9);return{q:"外接円の半径が "+R+" の三角形で、角 A ＝ 30° に向かい合う辺 a の長さは？（正弦定理を使う）",a:""+R};}
+    var tri=pick([[3,4,5],[5,12,13],[8,15,17]]);return{q:"直角三角形で sinθ ＝ "+fracText(tri[1],tri[2])+"（θは鋭角）のとき、cosθ と tanθ は？",a:"cosθ ＝ "+fracText(tri[0],tri[2])+"、tanθ ＝ "+fracText(tri[1],tri[0])};},
+  /* ---- 数学A 追加 ---- */
+  hA_prob2: function(d){
+    var t=ri(1,5);
+    if(t===1){var th=pick([4,5]);return{q:"さいころを1回投げて、"+th+" 以上の目が出る確率は？",a:fracText(7-th,6)};}
+    if(t===2){return{q:"コインを2回投げるとき、少なくとも1回表が出る確率は？",a:"3/4"};}
+    if(t===3){var red=ri(2,6),wh=ri(2,6);return{q:"赤玉 "+red+" 個、白玉 "+wh+" 個の袋から1個取り出すとき、赤玉が出る確率は？",a:fracText(red,red+wh)};}
+    if(t===4){var n=pick([4,5,6]);return{q:"1から "+n+" までの番号札から1枚引くとき、3の倍数が出る確率は？",a:fracText(Math.floor(n/3),n)};}
+    return{q:"さいころを2回投げて、出た目の和が 12 になる確率は？",a:"1/36"};},
+  hA_circle: function(d){
+    var t=ri(1,5);
+    if(t===1){var ins=ri(20,80);return{q:"円の中心角が "+(ins*2)+"° のとき、同じ弧に対する円周角は何度ですか？",a:ins+"°"};}
+    if(t===2){var ins2=ri(25,85);return{q:"円周角が "+ins2+"° のとき、同じ弧に対する中心角は何度ですか？",a:(ins2*2)+"°"};}
+    if(t===3){var a3=ri(60,140);return{q:"円に内接する四角形の1つの角が "+a3+"° のとき、向かい合う角は何度ですか？",a:(180-a3)+"°"};}
+    if(t===4){var r=ri(2,9);return{q:"半径 "+r+" の円の円周の長さは？（πを使って表す）",a:(2*r)+"π"};}
+    var r5=pick([4,6,10]),deg=pick([60,90,120]);var arc=fracText(r5*deg,180);return{q:"半径 "+r5+"、中心角 "+deg+"° のおうぎ形の弧の長さは？（πを使って表す）",a:arc+"π"};},
+  hA_euclid: function(d){
+    var t=ri(1,5);
+    if(t===1){var x=ri(12,60),y=ri(8,40);return{q:"ユークリッドの互除法を使って、"+x+" と "+y+" の最大公約数を求めよ",a:""+gcd(x,y)};}
+    if(t===2){var b=ri(4,15),q=ri(2,8),r=ri(1,b-1);return{q:"互除法の一手： "+(b*q+r)+" を "+b+" で割ったときの余りは？",a:""+r};}
+    if(t===3){var a3=ri(2,9),x0=ri(1,5),y0=-ri(1,5);var b3=ri(2,9);var c3=a3*x0+b3*y0;return{q:"方程式 "+a3+"x ＋ "+b3+"y ＝ "+c3+" の整数解を1つ答えよ",a:"x ＝ "+x0+"、y ＝ "+y0+"（解の一例）"};}
+    if(t===4){var a4=ri(6,24),b4=ri(6,24);return{q:a4+" と "+b4+" の最小公倍数は？（最大公約数 "+gcd(a4,b4)+" を使う）",a:""+(a4*b4/gcd(a4,b4))};}
+    var pr=pick([[6,35],[8,15],[9,28],[14,15]]);return{q:pr[0]+" と "+pr[1]+" は互いに素ですか？ 最大公約数で確かめて答えよ",a:"互いに素である（最大公約数 ＝ 1）"};},
+  /* ---- 数学II 追加 ---- */
+  h2_proof: function(d){
+    var t=ri(1,5);
+    if(t===1){var a=ri(2,9);return{q:"(x ＋ "+a+")² − (x − "+a+")² を計算して簡単にせよ",a:(4*a)+"x"};}
+    if(t===2){var a2=ri(3,12);return{q:"x² − "+(a2*a2)+" を因数分解せよ",a:"(x ＋ "+a2+")(x − "+a2+")"};}
+    if(t===3){return{q:"a ＝ 4、b ＝ 9 のとき、相加平均 (a＋b)/2 と相乗平均 √(ab) の値はそれぞれいくつですか？",a:"相加平均 6.5、相乗平均 6"};}
+    if(t===4){var a4=ri(2,7),b4=ri(2,7);return{q:"奇数 "+(2*a4+1)+" と奇数 "+(2*b4+1)+" の和は偶数ですか？ 計算して答えよ",a:"和は "+(2*a4+1+2*b4+1)+" で偶数である"};}
+    var k=pick([2,3,5]);return{q:"1／√"+k+" の分母を有理化せよ",a:"√"+k+"／"+k};},
+  h2_circle_eq: function(d){
+    var t=ri(1,5);
+    if(t===1){var h=ri(1,5),k=ri(1,5),r=pick([6,7,8]);var F=h*h+k*k-r*r;return{q:"円 x² ＋ y² − "+(2*h)+"x − "+(2*k)+"y "+(F>=0?"＋ "+F:"− "+Math.abs(F))+" ＝ 0 の中心と半径は？",a:"中心 ("+h+", "+k+")、半径 "+r};}
+    if(t===2){var pr=pick([[3,4,5],[4,3,5],[6,8,10],[8,6,10],[5,12,13]]);return{q:"円 x² ＋ y² ＝ "+(pr[2]*pr[2])+" と直線 y ＝ "+pr[1]+" の交点の x 座標は？",a:"x ＝ ±"+pr[0]};}
+    if(t===3){var pr3=pick([[3,4,5],[6,8,10],[5,12,13]]);return{q:"原点から点 ("+pr3[0]+", "+pr3[1]+") までの距離は？",a:""+pr3[2]};}
+    if(t===4){var h4=ri(1,4),k4=ri(1,4),r4=pick([2,3,5]);return{q:"中心 ("+h4+", "+k4+")、半径 "+r4+" の円の方程式は？",a:"(x − "+h4+")² ＋ (y − "+k4+")² ＝ "+(r4*r4)};}
+    return{q:"円 x² ＋ y² ＝ 25 と点 (3, 4) の関係は？（点は円の上・内・外のどれか）",a:"円の上にある（3²＋4²＝25）"};},
+  h2_integral: function(d){
+    var t=ri(1,5);
+    if(t===1){var b=ri(1,4);return{q:"∫[0→"+b+"] x dx を計算せよ",a:fracText(b*b,2)};}
+    if(t===2){var b2=ri(1,3);return{q:"∫[0→"+b2+"] x² dx を計算せよ",a:fracText(b2*b2*b2,3)};}
+    if(t===3){var b3=ri(1,4);return{q:"∫[0→"+b3+"] (2x ＋ 1) dx を計算せよ",a:""+(b3*b3+b3)};}
+    if(t===4){var a4=pick([2,4,6]);return{q:"∫ "+a4+"x dx （不定積分、積分定数 C を含む）は？",a:fracText(a4,2)+"x² ＋ C"};}
+    var n=pick([1,2,3]);return{q:"∫[0→1] x^"+n+" dx を計算せよ（^ は累乗）",a:fracText(1,n+1)};},
+  /* ---- 数学B 追加 ---- */
+  hB_seq_sum: function(d){
+    var t=ri(1,5);
+    if(t===1){var n=ri(6,15);return{q:"Σ[k=1→"+n+"] k （1から "+n+" までの和）は？",a:""+(n*(n+1)/2)};}
+    if(t===2){var a=ri(1,8),dd=ri(1,5),n2=10;var an=a+(n2-1)*dd;return{q:"初項 "+a+"、公差 "+dd+" の等差数列の初項から第10項までの和は？",a:""+(n2*(a+an)/2)};}
+    if(t===3){var n3=ri(4,6);return{q:"初項 1、公比 2 の等比数列の初項から第 "+n3+" 項までの和は？",a:""+(Math.pow(2,n3)-1)};}
+    if(t===4){var n4=pick([3,4,5]);return{q:"Σ[k=1→"+n4+"] k² （1²＋2²＋…＋"+n4+"²）は？",a:""+(n4*(n4+1)*(2*n4+1)/6)};}
+    var n5=ri(4,9);return{q:"Σ[k=1→"+n5+"] (2k − 1) （奇数 "+n5+" 個の和）は？",a:""+(n5*n5)};},
+  hB_recurrence: function(d){
+    var t=ri(1,5);
+    if(t===1){var a=ri(1,6),dd=ri(2,5);return{q:"a₁ ＝ "+a+"、aₙ₊₁ ＝ aₙ ＋ "+dd+" で定まる数列の第5項 a₅ は？",a:""+(a+4*dd)};}
+    if(t===2){var a2=ri(1,4),r=pick([2,3]);return{q:"a₁ ＝ "+a2+"、aₙ₊₁ ＝ "+r+"aₙ で定まる数列の第4項 a₄ は？",a:""+(a2*Math.pow(r,3))};}
+    if(t===3){var seq=[ri(1,4)];for(var i=1;i<4;i++)seq.push(seq[i-1]+i);return{q:"a₁ ＝ "+seq[0]+"、aₙ₊₁ ＝ aₙ ＋ n で定まる数列の第4項 a₄ は？",a:""+seq[3]};}
+    if(t===4){var f=[1,1];for(var j=2;j<6;j++)f.push(f[j-1]+f[j-2]);return{q:"a₁ ＝ 1、a₂ ＝ 1、aₙ₊₂ ＝ aₙ₊₁ ＋ aₙ で定まる数列の第6項 a₆ は？",a:""+f[5]};}
+    return{q:"等式 1 ＋ 2 ＋ … ＋ n ＝ n(n＋1)/2 が n ＝ 1 のとき成り立つか、両辺の値を答えよ",a:"左辺 1、右辺 1 で成り立つ"};},
+  hB_prob_dist: function(d){
+    var t=ri(1,5);
+    if(t===1){return{q:"確率変数 X が値 0 を確率 1/2、値 2 を確率 1/2 でとるとき、期待値 E(X) は？",a:"1"};}
+    if(t===2){var n=pick([10,20,50,100]),p=pick([0.2,0.25,0.5]);return{q:"成功確率 "+p+" の試行を "+n+" 回行う二項分布で、成功回数の期待値は？",a:""+trimNum(n*p)};}
+    if(t===3){var n3=pick([4,8,12]);return{q:"二項分布 B("+n3+", 1/2) の分散は？（np(1−p) を使う）",a:fracText(n3,4)};}
+    if(t===4){return{q:"確率変数 X が値 1 を確率 1/3、値 4 を確率 2/3 でとるとき、期待値 E(X) は？",a:"3"};}
+    var k=pick([0,1,2,3]);var comb=[1,3,3,1][k];return{q:"コインを3回投げて表が "+k+" 回出る確率は？（二項分布 B(3, 1/2)）",a:fracText(comb,8)};},
+  /* ---- 数学III 追加 ---- */
+  h3_seq_limit: function(d){
+    var t=ri(1,5);
+    if(t===1){var a=ri(2,6),b=ri(1,9),c=ri(2,5),e=ri(1,9);return{q:"lim[n→∞] ("+a+"n ＋ "+b+")／("+c+"n ＋ "+e+") の値は？",a:fracText(a,c)};}
+    if(t===2){var r=pick(["1/2","1/3","2/3"]);return{q:"公比 "+r+" の等比数列の極限は？（n → ∞）",a:"0 に収束する"};}
+    if(t===3){var a3=ri(1,8),b3=ri(1,8);return{q:"lim[n→∞] (n² ＋ "+a3+"n)／(n² ＋ "+b3+") の値は？",a:"1"};}
+    if(t===4){var a4=pick([1,2,3]),fr=pick([[1,2],[1,3],[2,3]]);return{q:"無限等比級数 初項 "+a4+"、公比 "+fr[0]+"/"+fr[1]+" の和は？",a:fracText(a4*fr[1],fr[1]-fr[0])};}
+    var a5=ri(2,6),b5=ri(1,9),c5=ri(1,5);return{q:"lim[n→∞] ("+a5+"n ＋ "+b5+")／(n ＋ "+c5+") の値は？",a:""+a5};},
+  h3_diff_app: function(d){
+    var t=ri(1,5);
+    if(t===1){var k=ri(1,3);return{q:"f(x) ＝ x³ − "+(3*k*k)+"x のとき、f′(x) ＝ 0 となる x は？",a:"x ＝ ±"+k};}
+    if(t===2){var x0=ri(1,4);return{q:"曲線 y ＝ x³ 上の点 x ＝ "+x0+" における接線の傾きは？",a:""+(3*x0*x0)};}
+    if(t===3){var h=ri(1,5);return{q:"f(x) ＝ x² − "+(2*h)+"x は、x が何より大きい範囲で増加しますか？（頂点を使う）",a:"x ＞ "+h+" で増加する"};}
+    if(t===4){return{q:"f(x) ＝ x³ − 3x は x ＝ −1 で極大値をとります。その極大値は？",a:"2"};}
+    var tt=ri(1,4);return{q:"位置 s ＝ t³ で動く点の、t ＝ "+tt+" における速度（s を微分したもの）は？",a:""+(3*tt*tt)};},
+  h3_int_app: function(d){
+    var t=ri(1,5);
+    if(t===1){var b=ri(2,5);return{q:"直線 y ＝ x と x 軸、直線 x ＝ "+b+" で囲まれた部分の面積は？",a:fracText(b*b,2)};}
+    if(t===2){var b2=ri(1,3);return{q:"曲線 y ＝ x² と x 軸、直線 x ＝ "+b2+" で囲まれた部分の面積は？",a:fracText(b2*b2*b2,3)};}
+    if(t===3){var b3=ri(2,4);return{q:"直線 y ＝ 2x と x 軸、直線 x ＝ "+b3+" で囲まれた部分の面積は？",a:""+(b3*b3)};}
+    if(t===4){return{q:"曲線 y ＝ x² と直線 y ＝ x （0 ≦ x ≦ 1）で囲まれた部分の面積は？",a:"1/6"};}
+    var b5=ri(1,3);return{q:"曲線 y ＝ x ＋ 1 と x 軸、直線 x ＝ "+b5+"、x ＝ 0 で囲まれた部分の面積は？",a:fracText(b5*b5+2*b5,2)};},
+  /* ---- 数学C 追加 ---- */
+  hC_vector_space: function(d){
+    var t=ri(1,5);
+    if(t===1){var pr=pick([[1,2,2,3],[2,3,6,7],[2,6,3,7],[1,4,8,9],[4,4,7,9]]);return{q:"空間ベクトル a ＝ ("+pr[0]+", "+pr[1]+", "+pr[2]+") の大きさ |a| は？",a:""+pr[3]};}
+    if(t===2){var a=ri(1,4),b=ri(1,4),c=ri(1,4),e=ri(1,4),f=ri(1,4),g=ri(1,4);return{q:"a ＝ ("+a+", "+b+", "+c+")、b ＝ ("+e+", "+f+", "+g+") のとき、内積 a・b は？",a:""+(a*e+b*f+c*g)};}
+    if(t===3){var a3=ri(1,5),b3=ri(1,5),c3=ri(1,5),e3=ri(1,5),f3=ri(1,5),g3=ri(1,5);return{q:"a ＝ ("+a3+", "+b3+", "+c3+")、b ＝ ("+e3+", "+f3+", "+g3+") のとき、a ＋ b の成分は？",a:"("+(a3+e3)+", "+(b3+f3)+", "+(c3+g3)+")"};}
+    if(t===4){var k=ri(2,4),a4=ri(1,4),b4=ri(1,4),c4=ri(1,4);return{q:"a ＝ ("+a4+", "+b4+", "+c4+") のとき、"+k+"a の成分は？",a:"("+(k*a4)+", "+(k*b4)+", "+(k*c4)+")"};}
+    return{q:"a ＝ (1, 1, 0)、b ＝ (1, −1, 2) のとき、a と b は垂直ですか？ 内積で確かめて答えよ",a:"垂直である（内積 ＝ 0）"};},
+  hC_curve2: function(d){
+    var t=ri(1,5);
+    if(t===1){var tv=ri(1,4),a=ri(1,4),b=ri(1,4);return{q:"媒介変数表示 x ＝ t ＋ "+a+"、y ＝ 2t ＋ "+b+" で、t ＝ "+tv+" のときの点の座標は？",a:"("+(tv+a)+", "+(2*tv+b)+")"};}
+    if(t===2){return{q:"極座標 (r, θ) ＝ (2, 60°) の点を直交座標 (x, y) で表すと？（x ＝ r cosθ、y ＝ r sinθ）",a:"(1, √3)"};}
+    if(t===3){var pr=pick([[5,4,3],[10,8,6],[13,12,5]]);return{q:"楕円 x²/"+(pr[0]*pr[0])+" ＋ y²/"+(pr[1]*pr[1])+" ＝ 1 の焦点の x 座標（正の方）は？（c ＝ √(a²−b²)）",a:""+pr[2]};}
+    if(t===4){var a4=pick([2,4]),b4=pick([1,3]);return{q:"双曲線 x²/"+(a4*a4)+" − y²/"+(b4*b4)+" ＝ 1 の漸近線の傾きは？",a:"±"+fracText(b4,a4)};}
+    var h=ri(1,4),k=ri(1,4);return{q:"放物線 y ＝ (x − "+h+")² ＋ "+k+" の頂点の座標は？",a:"("+h+", "+k+")"};},
+  hC_complex_calc: function(d){
+    var t=ri(1,5);
+    if(t===1){var a=ri(1,4),b=ri(1,4),c=ri(1,4),e=ri(1,4);return{q:"("+a+" ＋ "+b+"i)(" + c + " ＋ " + e + "i) を計算せよ",a:(a*c-b*e)+" ＋ "+(a*e+b*c)+"i"};}
+    if(t===2){var a2=ri(1,6),b2=ri(1,6);return{q:"複素数 "+a2+" ＋ "+b2+"i に i をかけた結果は？（回転の計算）",a:"−"+b2+" ＋ "+a2+"i"};}
+    if(t===3){var pr=pick([[3,4,5],[6,8,10],[5,12,13]]);return{q:"複素数 "+pr[0]+" ＋ "+pr[1]+"i の絶対値は？",a:""+pr[2]};}
+    if(t===4){var n=ri(5,10);var cyc=["1","i","−1","−i"][n%4];return{q:"i^"+n+" の値は？（^ は累乗、i の累乗の周期を使う）",a:cyc};}
+    var pr5=pick([["1 ＋ i","π/4"],["√3 ＋ i","π/6"],["1 ＋ √3 i","π/3"]]);return{q:"複素数 "+pr5[0]+" の偏角は？（0 から π/2 の範囲で）",a:pr5[1]};}
+};
+
+var CURRICULUM = [
+  {grade:"中学1年", units:[
+    {id:"j1_sign", name:"正負の数", desc:"負の数の加減乗除と、累乗を出します。"},
+    {id:"j1_expr", name:"文字式", desc:"同類項、分配法則、式の値を出します。"},
+    {id:"j1_eq", name:"一次方程式", desc:"移項を使う一次方程式を解く問題を出します。"}]},
+  {grade:"中学2年", units:[
+    {id:"j2_renritsu", name:"連立方程式", desc:"加減法・代入法で解く連立方程式と文章題を出します。"},
+    {id:"j2_func", name:"一次関数", desc:"変化の割合、式の決定、交点を出します。"},
+    {id:"j2_expr", name:"式の計算", desc:"単項式の乗除、等式の変形などを出します。"}]},
+  {grade:"中学3年", units:[
+    {id:"j3_expand", name:"展開・因数分解", desc:"乗法公式の展開と、因数分解を出します。"},
+    {id:"j3_sqrt", name:"平方根", desc:"√を簡単にする、根号の計算、近似値を出します。"},
+    {id:"j3_quad", name:"二次方程式", desc:"因数分解と平方完成の考え方で解く問題を出します。"}]},
+  {grade:"数学I", units:[
+    {id:"h1_expr", name:"数と式（展開・因数分解）", desc:"乗法公式の展開・因数分解を出します。"},
+    {id:"h1_ineq", name:"一次不等式・絶対値", desc:"一次不等式の解法、絶対値の方程式・不等式、整数解の個数を出します。"},
+    {id:"h1_quadfunc", name:"二次関数（グラフと頂点）", desc:"頂点・軸、平方完成、最大・最小を出します。"},
+    {id:"h1_quadeq", name:"二次方程式・二次不等式", desc:"二次方程式の解、判別式、二次不等式、共有点の個数を出します。"},
+    {id:"h1_trig", name:"三角比", desc:"sin・cos・tan の値と、直角三角形での利用を出します。"},
+    {id:"h1_sine_cosine", name:"正弦定理・余弦定理", desc:"正弦定理・余弦定理、三角形の面積の公式を出します。"},
+    {id:"h1_data", name:"データの分析", desc:"平均値、中央値、分散、範囲を出します。"}]},
+  {grade:"数学A", units:[
+    {id:"hA_prob", name:"場合の数（順列・組み合わせ）", desc:"順列（階乗）・組み合わせの計算を出します。"},
+    {id:"hA_prob2", name:"確率", desc:"さいころ・コイン・玉の取り出しなどの基本的な確率を出します。"},
+    {id:"hA_geom", name:"図形の性質（角と三角形）", desc:"三角形・正多角形の角、円に内接する四角形を出します。"},
+    {id:"hA_circle", name:"円の性質", desc:"中心角と円周角、内接四角形、円周と弧の長さを出します。"},
+    {id:"hA_int", name:"整数の性質（約数・倍数）", desc:"約数の個数、最大公約数・最小公倍数、割り算の商と余りを出します。"},
+    {id:"hA_euclid", name:"ユークリッドの互除法と不定方程式", desc:"互除法で最大公約数を求める問題と、一次不定方程式の整数解を出します。"}]},
+  {grade:"数学II", units:[
+    {id:"h2_complex", name:"複素数と方程式", desc:"複素数の計算、虚数単位 i、複素数の範囲での方程式を出します。"},
+    {id:"h2_proof", name:"式と証明", desc:"恒等式の計算、相加・相乗平均、奇数・偶数の性質、分母の有理化を出します。"},
+    {id:"h2_geom_eq", name:"図形と方程式（点と直線）", desc:"2点間の距離・中点、直線と軸の交点を出します。"},
+    {id:"h2_circle_eq", name:"円と軌跡", desc:"円の方程式、中心と半径、円と直線の交点を出します。"},
+    {id:"h2_trigfunc", name:"三角関数", desc:"弧度法、三角関数の値、加法定理を出します。"},
+    {id:"h2_exp_log", name:"指数関数・対数関数", desc:"指数法則、対数の値と方程式を出します。"},
+    {id:"h2_diff_int", name:"微分の考え", desc:"導関数、接線の傾きを出します。"},
+    {id:"h2_integral", name:"積分の考え", desc:"定積分・不定積分の基本計算を出します。"}]},
+  {grade:"数学B", units:[
+    {id:"h3_seq", name:"等差数列・等比数列", desc:"等差数列・等比数列の一般項を出します。"},
+    {id:"hB_seq_sum", name:"数列の和・Σ", desc:"等差・等比数列の和と、Σの公式を使う計算を出します。"},
+    {id:"hB_recurrence", name:"漸化式・数学的帰納法", desc:"漸化式から項を求める問題と、帰納法の考え方を出します。"},
+    {id:"hB_stat", name:"統計的な推測（期待値）", desc:"確率変数の期待値と、二項分布の期待値の考え方を出します。"},
+    {id:"hB_prob_dist", name:"確率分布と二項分布", desc:"期待値・分散、二項分布の確率の計算を出します。"}]},
+  {grade:"数学III", units:[
+    {id:"h3_seq_limit", name:"数列の極限", desc:"数列の極限の値と、無限等比級数の和を出します。"},
+    {id:"h3_limit_diff", name:"関数の極限", desc:"関数の極限、数列の極限、微分係数を出します。"},
+    {id:"h3_diff", name:"微分法", desc:"いろいろな関数の微分と、関数の増減を出します。"},
+    {id:"h3_diff_app", name:"微分の応用", desc:"接線の傾き、極大・極小、関数の増減、速度を出します。"},
+    {id:"h3_integral", name:"積分法", desc:"定積分・不定積分の計算を出します。"},
+    {id:"h3_int_app", name:"積分の応用（面積）", desc:"曲線と直線で囲まれた部分の面積を出します。"}]},
+  {grade:"数学C", units:[
+    {id:"h3_vector", name:"平面ベクトル", desc:"ベクトルの成分・大きさ・内積と、垂直条件を出します。"},
+    {id:"hC_vector_space", name:"空間ベクトル", desc:"空間ベクトルの成分・大きさ・内積を出します。"},
+    {id:"hC_curve", name:"二次曲線", desc:"放物線・楕円・双曲線と、図形の平行移動を出します。"},
+    {id:"hC_curve2", name:"極座標・媒介変数表示", desc:"媒介変数表示の点の座標、極座標の変換、楕円の焦点を出します。"},
+    {id:"hC_complex_plane", name:"複素数平面", desc:"絶対値、共役複素数、極形式を出します。"},
+    {id:"hC_complex_calc", name:"複素数平面の計算と回転", desc:"複素数の積、iをかける回転、絶対値と偏角を出します。"}]}
+];
+
+/* ================= state & UI ================= */
+var state = { gradeIdx:3, unitId:"h1_expr", count:10, diff:2, questions:[] };
+var gradeChips=document.getElementById("gradeChips");
+var unitChips=document.getElementById("unitChips");
+var unitDesc=document.getElementById("unitDesc");
+
+CURRICULUM.forEach(function(g,i){
+  var b=document.createElement("button"); b.type="button"; b.className="chip"; b.textContent=g.grade;
+  b.setAttribute("aria-pressed", i===state.gradeIdx?"true":"false");
+  b.addEventListener("click",function(){
+    state.gradeIdx=i; state.unitId=CURRICULUM[i].units[0].id;
+    renderGrades(); renderUnits(); generate();
+  });
+  gradeChips.appendChild(b);
+});
+function renderGrades(){
+  Array.prototype.forEach.call(gradeChips.children,function(b,i){
+    b.setAttribute("aria-pressed", i===state.gradeIdx?"true":"false");
+  });
+}
+function currentUnit(){
+  var units=CURRICULUM[state.gradeIdx].units;
+  for(var i=0;i<units.length;i++) if(units[i].id===state.unitId) return units[i];
+  return units[0];
+}
+function renderUnits(){
+  unitChips.innerHTML="";
+  CURRICULUM[state.gradeIdx].units.forEach(function(u){
+    var b=document.createElement("button"); b.type="button"; b.className="chip unit"; b.textContent=u.name;
+    b.setAttribute("aria-pressed", u.id===state.unitId?"true":"false");
+    b.addEventListener("click",function(){ state.unitId=u.id; renderUnits(); generate(); });
+    unitChips.appendChild(b);
+  });
+  unitDesc.textContent=currentUnit().desc;
+}
+function segWire(id, attr, cb){
+  var el=document.getElementById(id);
+  el.addEventListener("click",function(e){
+    var btn=e.target.closest("button"); if(!btn)return;
+    Array.prototype.forEach.call(el.querySelectorAll("button"),function(x){x.removeAttribute("aria-pressed");});
+    btn.setAttribute("aria-pressed","true");
+    cb(parseInt(btn.getAttribute(attr),10));
+  });
+}
+segWire("countSeg","data-count",function(v){state.count=v;generate();});
+segWire("diffSeg","data-diff",function(v){state.diff=v;generate();});
+["optName","optWork","optAnswers","optTwoCol"].forEach(function(id){
+  document.getElementById(id).addEventListener("change",render);
+});
+
+function generate(){
+  var gen=GEN[state.unitId]; var qs=[]; var seen={};
+  var guard=0;
+  while(qs.length<state.count && guard<400){
+    guard++;
+    var item=gen(state.diff);
+    if(seen[item.q]) continue;
+    seen[item.q]=1; qs.push(item);
+  }
+  state.questions=qs;
+  render();
+}
+function gradeLabel(){
+  var g=CURRICULUM[state.gradeIdx].grade;
+  return g.indexOf("数学")===0 ? g : g+"　数学";
+}
+function render(){
+  var unit=currentUnit();
+  var grade=CURRICULUM[state.gradeIdx].grade;
+  document.getElementById("paperGrade").textContent=gradeLabel();
+  document.getElementById("paperTitle").textContent="「"+unit.name+"」単元テスト";
+  document.getElementById("paperHead").style.display=document.getElementById("optName").checked?"":"none";
+  document.getElementById("paperCountNote").textContent="全 "+state.questions.length+" 問 ／ 100点満点";
+  var showWork=document.getElementById("optWork").checked;
+  var per=Math.floor(100/state.questions.length);
+  var rest=100-per*state.questions.length;
+  var list=document.getElementById("questionList"); list.innerHTML="";
+  /* 短い計算問題が多いときは2列にして、用紙をバランスよく使う */
+  var plainLens=state.questions.map(function(it){return it.q.replace(/<[^>]+>/g,"").length;});
+  var avgLen=plainLens.reduce(function(s,x){return s+x;},0)/Math.max(1,plainLens.length);
+  var hasLong=state.questions.some(function(it){return it.q.indexOf("<br>")>=0 || it.q.replace(/<[^>]+>/g,"").length>46;});
+  var twoCol=document.getElementById("optTwoCol").checked && state.questions.length>=6 && avgLen<=34 && !hasLong;
+  list.className="qs"+(twoCol?" two-col":"");
+  var ansList=document.getElementById("answerList"); ansList.innerHTML="";
+  state.questions.forEach(function(item,i){
+    var pts=per+(i<rest?1:0);
+    var plainLen=item.q.replace(/<[^>]+>/g,"").length;
+    var workH=twoCol?48:(plainLen>46?84:(plainLen>30?64:52));
+    var li=document.createElement("li");
+    li.innerHTML='<div class="q-line"><span class="q-num">問 '+(i+1)+'</span><div class="q-body"><span class="q-text">'+item.q+'</span></div><span class="q-points">'+pts+'点</span></div>'
+      +(showWork?'<div class="work-space" style="height:'+workH+'px"></div>':'<div class="ans-line">答え　<span class="ans-blank"></span></div>');
+    list.appendChild(li);
+    var ali=document.createElement("li");
+    ali.innerHTML="<b>"+(i+1)+".</b>"+item.a+"　<span class='pts'>（"+pts+"点）</span>";
+    ansList.appendChild(ali);
+  });
+  document.getElementById("answerSub").textContent=grade+"「"+unit.name+"」／ 問題数 "+state.questions.length+"問 ／ 難易度："+(["","基礎","標準","発展"])[state.diff];
+  document.getElementById("answerPaper").style.display=document.getElementById("optAnswers").checked?"":"none";
+}
+
+/* ================= file download ================= */
+function download(filename, html){
+  var blob=new Blob([html],{type:"text/html;charset=utf-8"});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement("a"); a.href=url; a.download=filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){URL.revokeObjectURL(url);},2000);
+}
+function testHTML(){
+  var unit=currentUnit(); var grade=CURRICULUM[state.gradeIdx].grade;
+  var per=Math.floor(100/state.questions.length); var rest=100-per*state.questions.length;
+  var qs=state.questions.map(function(item,i){
+    var pts=per+(i<rest?1:0);
+    return '<li><div><span class="num">問 '+(i+1)+'</span> <span class="qt">'+item.q+'</span> <span class="pts">'+pts+'点</span></div><div class="work"></div></li>';
+  }).join("");
+  var ans=state.questions.map(function(item,i){return '<li><b>'+(i+1)+'.</b> '+item.a+'</li>';}).join("");
+  var showAns=document.getElementById("optAnswers").checked;
+  return '<!doctype html><html lang="ja"><head><meta charset="utf-8"><title>'+grade+'「'+unit.name+'」単元テスト</title><style>'
+    +'body{font-family:sans-serif;color:#14181D;max-width:760px;margin:24px auto;padding:0 16px;line-height:1.7}'
+    +'.meta{display:flex;gap:18px;flex-wrap:wrap;border-bottom:3px double #14181D;padding-bottom:10px;font-size:14px}'
+    +'.blank{display:inline-block;border-bottom:1.5px solid #14181D;min-width:56px}.blank.name{min-width:150px}'
+    +'.score{margin-left:auto;border:2px solid #14181D;border-radius:6px;padding:2px 12px;font-weight:bold}'
+    +'h1{text-align:center;font-size:24px;margin:18px 0 4px}.grade{text-align:center;letter-spacing:.2em;font-size:13px;color:#444}'
+    +'ol.qs{list-style:none;padding:0}ol.qs li{padding:16px 0 18px;border-bottom:1px dashed #bbb}.num{display:inline-flex;padding:1px 10px;border:2px solid #14181D;border-radius:999px;align-items:center;justify-content:center;font-weight:bold;background:#14181D;color:#fff;font-size:13px}'
+    +'.qt{font-weight:bold;font-size:16.5px}.pts{font-size:11.5px;font-weight:bold;border:1.5px solid #14181D;border-radius:999px;padding:1px 8px;background:#FBF0DC}.work{height:52px;border:1px solid #ddd;border-radius:6px;margin:10px 0 0 44px;background:repeating-linear-gradient(180deg,#fff 0 25px,#eee 25px 26px)}'
+    +'.frac{display:inline-flex;flex-direction:column;text-align:center;vertical-align:middle;line-height:1.15;font-size:.86em}.frac .top{border-bottom:1.5px solid #14181D;padding:0 .3em}.frac .bot{padding:0 .3em}'
+    +'.answers{page-break-before:always;border:2px solid #B3261E;padding:20px;margin-top:30px}.answers h2{color:#B3261E;margin-top:0}.answers ol{columns:2}'
+    +'@media print{.answers{page-break-before:always}}</style></head><body>'
+    +'<div class="meta"><span><span class="blank"></span>年 <span class="blank"></span>組 <span class="blank"></span>番</span><span>名前 <span class="blank name"></span></span><span class="score">得点 ／ 100</span></div>'
+    +'<p class="grade">'+gradeLabel()+'</p><h1>「'+unit.name+'」単元テスト</h1>'
+    +'<ol class="qs">'+qs+'</ol>'
+    +(showAns?'<div class="answers"><h2>解答（先生用）</h2><ol>'+ans+'</ol></div>':'')
+    +'</body></html>';
+}
+document.getElementById("btnSaveTest").addEventListener("click",function(){
+  var unit=currentUnit();
+  download(CURRICULUM[state.gradeIdx].grade+"_"+unit.name+"_テスト.html", testHTML());
+});
+document.getElementById("btnSaveApp").addEventListener("click",function(){
+  var html="<!doctype html>\n"+document.documentElement.outerHTML;
+  download("数学_単元テスト作成アプリ.html", html);
+});
+document.getElementById("btnShuffle").addEventListener("click",generate);
+
+/* ================= PDF download (browser-only) ================= */
+function pdfFilename(kind){
+  var unit=currentUnit(); var grade=CURRICULUM[state.gradeIdx].grade;
+  var base=(grade+"_"+unit.name+"_"+(kind==="answers"?"解答":"テスト")).replace(/[\\\/:*?"<>|]/g,"_");
+  return base+".pdf";
+}
+function setPdfStatus(msg,isErr){
+  var el=document.getElementById("pdfStatus");
+  el.textContent=msg||""; el.className="pdf-status"+(isErr?" err":"");
+}
+function savePDF(kind){
+  var isAns=(kind==="answers");
+  var target=document.getElementById(isAns?"answerPaper":"paper");
+  var btnTest=document.getElementById("btnPdfTest"), btnAns=document.getElementById("btnPdfAnswers");
+  var hasCanvas=(typeof window.html2canvas!=="undefined");
+  var JsPDFCtor=(window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+  if(!hasCanvas || !JsPDFCtor){
+    if(typeof window.html2pdf==="undefined"){
+      setPdfStatus("PDF作成用の読み込みが終わっていません。ネット接続を確認して、ページを再読み込みしてからもう一度お試しください。代わりに「テストをファイルで保存」も使えます。",true);
+      return;
+    }
+    // Fallback: html2pdf bundle is present but globals are not exposed —
+    // use it with a forced one-page fit via a scaled clone (see below).
+    hasCanvas=false;
+  }
+  var wasHidden=isAns && target.style.display==="none";
+  var prevDisplay=target.style.display;
+  if(wasHidden) target.style.display="";
+  btnTest.disabled=true; btnAns.disabled=true;
+  setPdfStatus((isAns?"解答":"テスト")+"のPDFを作成しています（A4・1枚にまとめています）…",false);
+
+  function cleanup(){
+    if(wasHidden) target.style.display=prevDisplay;
+    btnTest.disabled=false; btnAns.disabled=false;
+  }
+
+  if(hasCanvas && JsPDFCtor){
+    // --- One-page fit: render a fixed-width clone once, then scale the whole
+    // image to fit a single A4 page (never split across pages) ---
+    var wrap=document.createElement("div");
+    wrap.style.cssText="position:fixed;left:-10000px;top:0;width:800px;background:#ffffff;z-index:-1;";
+    var pdfClone=target.cloneNode(true);
+    pdfClone.style.display="block";
+    pdfClone.style.width="800px";
+    pdfClone.style.maxWidth="800px";
+    pdfClone.style.boxShadow="none";
+    pdfClone.style.margin="0";
+    wrap.appendChild(pdfClone);
+    document.body.appendChild(wrap);
+    function removeWrap(){ if(wrap.parentNode) wrap.parentNode.removeChild(wrap); }
+    window.html2canvas(pdfClone,{
+      scale:2.5,
+      useCORS:true,
+      backgroundColor:"#ffffff",
+      logging:false,
+      windowWidth:900,
+      width:800,
+      height:pdfClone.scrollHeight
+    }).then(function(canvas){
+      removeWrap();
+      var imgData=canvas.toDataURL("image/jpeg",0.98);
+      var pdf=new JsPDFCtor({unit:"mm",format:"a4",orientation:"portrait",compress:true});
+      var pageW=pdf.internal.pageSize.getWidth();   // 210mm
+      var pageH=pdf.internal.pageSize.getHeight();  // 297mm
+      var margin=10;
+      var usableW=pageW-margin*2; // 190mm
+      var usableH=pageH-margin*2; // 277mm
+      var imgW=usableW;
+      var imgH=(canvas.height*imgW)/canvas.width;
+      if(imgH>usableH){
+        imgH=usableH;
+        imgW=(canvas.width*imgH)/canvas.height;
+      }
+      var x=margin+(usableW-imgW)/2;
+      var y=margin; // top-aligned; when height-constrained it fills the page height exactly
+      pdf.addImage(imgData,"JPEG",x,y,imgW,imgH);
+      // Guarantee single page: never call addPage()
+      pdf.save(pdfFilename(kind));
+      setPdfStatus((isAns?"解答":"テスト")+"のPDFをA4・1枚で保存しました。",false);
+      cleanup();
+    }).catch(function(){
+      removeWrap();
+      setPdfStatus("PDFの作成に失敗しました。もう一度お試しください。",true);
+      cleanup();
+    });
+    return;
+  }
+
+  // Fallback path (rare): clone + shrink to fit, then html2pdf on the clone
+  var cloneWrap=document.createElement("div");
+  cloneWrap.style.cssText="position:fixed;left:-10000px;top:0;width:794px;background:#fff;z-index:-1;";
+  var clone=target.cloneNode(true);
+  clone.style.width="794px";
+  clone.style.boxShadow="none";
+  cloneWrap.appendChild(clone);
+  document.body.appendChild(cloneWrap);
+  // Measure and scale down if taller than A4 ratio (794 x 1123)
+  var ch=clone.scrollHeight||clone.offsetHeight;
+  var maxH=1123-56; // margins in px approx
+  if(ch>maxH){
+    var ratio=maxH/ch;
+    clone.style.transformOrigin="top left";
+    clone.style.transform="scale("+ratio+")";
+    cloneWrap.style.height=(ch*ratio)+"px";
+    cloneWrap.style.width=(794*ratio)+"px";
+  }
+  var opt2={
+    margin:[10,10,10,10],
+    filename:pdfFilename(kind),
+    image:{type:"jpeg",quality:0.98},
+    html2canvas:{scale:2,useCORS:true,backgroundColor:"#ffffff",windowWidth:900},
+    jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},
+    pagebreak:{mode:["avoid-all"]}
+  };
+  window.html2pdf().set(opt2).from(clone).save().then(function(){
+    setPdfStatus((isAns?"解答":"テスト")+"のPDFをA4・1枚で保存しました。",false);
+  }).catch(function(){
+    setPdfStatus("PDFの作成に失敗しました。もう一度お試しください。",true);
+  }).then(function(){
+    if(cloneWrap.parentNode) cloneWrap.parentNode.removeChild(cloneWrap);
+    cleanup();
+  });
+}
+document.getElementById("btnPdfTest").addEventListener("click",function(){savePDF("test");});
+document.getElementById("btnPdfAnswers").addEventListener("click",function(){savePDF("answers");});
+
+renderGrades(); renderUnits(); generate();
+</script>
+</body>
+</html>
